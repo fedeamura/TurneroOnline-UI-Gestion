@@ -14,7 +14,7 @@ import { goBack, push } from "connected-react-router";
 import { seleccionarEntidad } from "@Redux/Actions/usuario";
 
 //Componentes
-import { Typography } from "@material-ui/core";
+import { Typography, Button } from "@material-ui/core";
 import _ from "lodash";
 
 //Mis componentes
@@ -54,6 +54,12 @@ class EntidadSeleccionar extends React.Component {
     this.props.redirigir("/ConsultaTurnos/" + idTurnero);
   };
 
+  onBotonGestionarClick = (e) => {
+    let idEntidad = e.currentTarget.attributes["data-id"].value;
+    this.props.seleccionarEntidad(idEntidad);
+    this.props.redirigir("/Entidad/" + idEntidad);
+  };
+
   render() {
     if (this.props.roles == undefined) return null;
 
@@ -69,8 +75,16 @@ class EntidadSeleccionar extends React.Component {
             return (
               <MiCard key={index} padding={false} rootClassName={classes.card} contentClassName={classes.cardContent}>
                 <div className={classes.imagenEntidad} style={{ backgroundImage: `url(${rol.entidadUrl})` }} />
-                <div className={classes.contenedorTextos}>
-                  <Typography variant="title">{rol.entidadNombre}</Typography>
+                <div className={classes.contenedorTextos} style={{ width: "100%" }}>
+                  <div style={{ display: "flex", flexDirection: "row" }}>
+                    <Typography style={{ flex: 1 }} variant="title">
+                      {rol.entidadNombre}
+                    </Typography>
+                    <Button variant="outlined" data-id={rol.entidadId} onClick={this.onBotonGestionarClick}>
+                      Gestionar
+                    </Button>
+                  </div>
+
                   <Typography variant="subheading">Rol: {rol.rolNombre}</Typography>
 
                   {rol.tramites.length == 0 && <Typography variant="body1">Sin tramites disponibles</Typography>}

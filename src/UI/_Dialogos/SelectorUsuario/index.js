@@ -117,6 +117,11 @@ class DialogoSelectorUsuario extends React.Component {
     this.props.onUsuarioSeleccionado && this.props.onUsuarioSeleccionado(usuario);
   };
 
+  onBotonUsuarioNuevoClick = () => {
+    var win = window.open(window.Config.URL_NUEVO_USUARIO, "_blank");
+    if (win) win.focus();
+  };
+
   render() {
     const { classes, fullScreen } = this.props;
 
@@ -162,16 +167,15 @@ class DialogoSelectorUsuario extends React.Component {
               </Button>
             </div>
 
-            {this.state.data.length == 0 &&
-              this.state.buscoAlgunaVez == true && (
-                <div className={classes.contenedorEmpty}>
-                  <IconPersonOutlined className={classes.iconoEmpty}/>
-                  <Typography variant="body1">No existe el usuario indicado.</Typography>
-                  <Button className={classes.botonNuevoUsuario} variant="outlined" color="primary">
-                    Crear usuario
-                  </Button>
-                </div>
-              )}
+            {this.state.data.length == 0 && this.state.buscoAlgunaVez == true && (
+              <div className={classes.contenedorEmpty}>
+                <IconPersonOutlined className={classes.iconoEmpty} />
+                <Typography variant="body1">No existe el usuario indicado.</Typography>
+                <Button className={classes.botonNuevoUsuario} variant="outlined" color="primary" onClick={this.onBotonUsuarioNuevoClick}>
+                  Crear usuario
+                </Button>
+              </div>
+            )}
 
             {usuariosNoValidados.length != 0 && (
               <Typography className={classes.textoSubtitulo} variant="body2">

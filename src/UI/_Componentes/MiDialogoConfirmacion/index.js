@@ -62,7 +62,7 @@ class DialogoConfirmacion extends React.PureComponent {
               </Button>
             )}
           </DialogActions>
-        </Dialog>{" "}
+        </Dialog>
       </React.Fragment>
     );
   }

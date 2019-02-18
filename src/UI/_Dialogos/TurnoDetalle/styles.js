@@ -72,11 +72,15 @@ const styles = theme => {
     contenedorError: {
       backgroundColor: red["500"],
       marginBottom: "0px !important",
-      "& *": {
-        fontColor: "white !important",
-        color: "white !important"
+    },
+    linkInteres: {
+      cursor: "pointer",
+      textDecoration: "underline",
+      color: theme.palette.primary.main,
+      "&:hover": {
+        fontWeight: "bold"
       }
-    }
+    },
   };
 };
 

@@ -15,7 +15,7 @@ import { mostrarAlertaVerde, mostrarAlertaNaranja } from "@Redux/Actions/alerta"
 
 //Compontes
 import _ from "lodash";
-import { Typography, Button, CircularProgress } from "@material-ui/core";
+import { Typography, Button, CircularProgress, ListItem, ListItemText, ListItemAvatar } from "@material-ui/core";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -29,19 +29,22 @@ import IconSwapVertOutlined from "@material-ui/icons/SwapVertOutlined";
 import IconSwapVerticalCircle from "@material-ui/icons/SwapVerticalCircleOutlined";
 import IconLockOutlined from "@material-ui/icons/LockOutlined";
 import IconLockOpenOutlined from "@material-ui/icons/LockOpenOutlined";
+import IconSpeakerNotesOutlined from "@material-ui/icons/SpeakerNotesOutlined";
+
 import orange from "@material-ui/core/colors/orange";
 
 //Mis Componentes
 import UsuarioDetalle from "@Componentes/MiUsuarioDetalle";
-import DialogoInput from "@UI/_Dialogos/Input";
-import DialogoConfirmacion from "@UI/_Dialogos/Confirmacion";
+import DialogoInput from "@Componentes/MiDialogoInput";
+import DialogoConfirmacion from "@Componentes/MiDialogoConfirmacion";
 import DialogoSelectorUsuario from "@UI/_Dialogos/SelectorUsuario";
 import MiBaner from "@Componentes/MiBaner";
 import DialogoTurnoHistorialEstado from "@UI/_Dialogos/TurnoHistorialEstado";
-import DateUtils from '@Componentes/Utils/Date';
+import DateUtils from "@Componentes/Utils/Date";
 
 //Rules
 import Rules_Turno from "@Rules/Rules_Turno";
+import Rules_Usuario from "@Rules/Rules_Usuario";
 
 const ESTADO_VENCIDO_KEY_VALUE = -1;
 const ESTADO_DISPONIBLE_KEY_VALUE = 1;
@@ -98,7 +101,7 @@ class DialogoTurnoDetalle extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.visible != this.props.visible) {
       if (nextProps.visible == true) {
-        this.setState({ data: undefined, turnoModificado: false });
+        this.setState({ data: undefined, turnoModificado: false, mostrarError: false });
         this.buscar(nextProps.idturno);
       }
     }
@@ -106,16 +109,23 @@ class DialogoTurnoDetalle extends React.Component {
 
   buscar = id => {
     this.setState({ cargando: true }, () => {
-      Rules_Turno.getDetalle({ id: id, idEntidad: this.props.rol.entidadId })
-        .then(data => {
-          console.log(data);
-          this.setState({ data: data });
+      Rules_Usuario.getRol(this.props.rol.entidadId)
+        .then(rol => {
+          console.log("id", id);
+          Rules_Turno.getDetalle({ id: id, idEntidad: this.props.rol.entidadId })
+            .then(data => {
+              console.log(data);
+              this.setState({ data: data });
+            })
+            .catch(error => {
+              this.setState({ mostrarError: true, error: error });
+            })
+            .finally(() => {
+              this.setState({ cargando: false });
+            });
         })
-        .catch(error => {
-          this.setState({ mostrarError: true, error: error });
-        })
-        .finally(() => {
-          this.setState({ cargando: false });
+        .catch(() => {
+          this.setState({ mostrarError: true, error: "Error procesando la solicitud" });
         });
     });
   };
@@ -154,7 +164,6 @@ class DialogoTurnoDetalle extends React.Component {
 
     this.setState({ cargando: true, mostrarError: false }, () => {
       Rules_Turno.asignar({
-        idEntidad: this.props.rol.entidadId,
         idTurno: this.state.data.id,
         idUsuario: usuario.id
       })
@@ -277,7 +286,7 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoCancelarReservaTurno = () => {
-    this.setState({ dialogoCancelarReservaVisible: true });
+    this.setState({ dialogoCancelarReservaVisible: true, mostrarError: false });
   };
 
   onDialogoCancelarReservaTurnoClose = () => {
@@ -285,7 +294,7 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoSelectorUsuario = () => {
-    this.setState({ dialogoSelectorUsuarioVisible: true });
+    this.setState({ dialogoSelectorUsuarioVisible: true, mostrarError: false });
   };
 
   onDialogoSelectorUsuarioClose = () => {
@@ -293,7 +302,7 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoCancelarTurno = () => {
-    this.setState({ dialogoCancelarTurnoVisible: true });
+    this.setState({ dialogoCancelarTurnoVisible: true, mostrarError: false });
   };
 
   onDialogoCancelarTurnoClose = () => {
@@ -301,7 +310,7 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoConfirmacionCompletarTurno = () => {
-    this.setState({ dialogoConfirmacionCompletarTurnoVisible: true });
+    this.setState({ dialogoConfirmacionCompletarTurnoVisible: true, mostrarError: false });
   };
 
   onDialogoConfirmacionCompletarTurnoClose = () => {
@@ -309,7 +318,7 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoConfirmacionPonerEnEstadoDisponible = () => {
-    this.setState({ dialogoConfirmacionPonerEnEstadoDisponibleVisible: true });
+    this.setState({ dialogoConfirmacionPonerEnEstadoDisponibleVisible: true, mostrarError: false });
   };
 
   onDialogoConfirmacionPonerEnEstadoDisponibleClose = () => {
@@ -317,23 +326,64 @@ class DialogoTurnoDetalle extends React.Component {
   };
 
   mostrarDialogoConfirmacionPonerEnEstadoReservado = () => {
-    this.setState({ dialogoConfirmacionPonerEnEstadoReservadoVisible: true });
+    this.setState({ dialogoConfirmacionPonerEnEstadoReservadoVisible: true, mostrarError: false });
   };
 
   onDialogoConfirmacionPonerEnEstadoReservadoClose = () => {
     this.setState({ dialogoConfirmacionPonerEnEstadoReservadoVisible: false });
   };
 
-  onBaneErrorClose = () => {
+  onBanerErrorClose = () => {
     this.setState({ mostrarError: false });
   };
 
   mostrarDialogoHistorialEstado = () => {
-    this.setState({ dialogoHistorialEstadoVisible: true });
+    this.setState({ dialogoHistorialEstadoVisible: true, mostrarError: false });
   };
 
   onDialogoHistorialEstadoClose = () => {
     this.setState({ dialogoHistorialEstadoVisible: false });
+  };
+
+  mostrarDialogoAgregarNota = () => {
+    this.setState({ dialogoAgregarNotaVisible: true, dialogoAgregarNotaErrorVisible:false });
+  };
+
+  onDialogoAgregarNotaClose = () => {
+    if (this.state.dialogoAgregarNotaCargando == true) return;
+    this.setState({ dialogoAgregarNotaVisible: false });
+  };
+
+  agregarNota = contenido => {
+    if (contenido.trim() == "") {
+      this.setState({ dialogoAgregarNotaErrorVisible: true, dialogoAgregarNotaError: "Ingrese el contenido de la nota" });
+      return;
+    }
+
+    this.setState(
+      {
+        dialogoAgregarNotaCargando: true,
+        dialogoAgregarNotaErrorVisible: false
+      },
+      () => {
+        Rules_Turno.agregarNota({
+          idTurno: this.state.data.id,
+          contenido: contenido
+        })
+          .then(() => {
+            this.setState({ dialogoAgregarNotaCargando: false, dialogoAgregarNotaVisible: false });
+            this.props.mostrarAlertaVerde({ texto: "Nota agregada correctamente" });
+            this.buscar(this.state.data.id);
+          })
+          .catch(error => {
+            this.setState({ dialogoAgregarNotaCargando: false, dialogoAgregarNotaErrorVisible: true, dialogoAgregarNotaError: error });
+          });
+      }
+    );
+  };
+
+  onDialogoAgregarNotaErrorClose = () => {
+    this.setState({ dialogoAgregarNotaErrorVisible: false });
   };
 
   render() {
@@ -361,8 +411,8 @@ class DialogoTurnoDetalle extends React.Component {
       tramiteNombre = this.state.data.tramiteNombre;
       turneroNombre = this.state.data.turneroNombre;
       fecha = DateUtils.toDateString(DateUtils.toDate(this.state.data.fecha));
-      horaInicio = DateUtils.transformarDuracion(this.state.data.inicio, 5);
-      horaFin = DateUtils.transformarDuracion(this.state.data.inicio + this.state.data.duracion, 5);
+      horaInicio = DateUtils.transformarDuracion(this.state.data.inicio);
+      horaFin = DateUtils.transformarDuracion(this.state.data.inicio + this.state.data.duracion);
 
       if (this.state.data.usuarioAsociado) {
         dataUsuarioAsociado = this.state.data.usuarioAsociado;
@@ -373,9 +423,11 @@ class DialogoTurnoDetalle extends React.Component {
       <React.Fragment>
         <Dialog fullScreen={fullScreen} open={this.props.visible} onClose={this.onClose} aria-labelledby="responsive-dialog-title">
           <MiBaner
+            modo="error"
             visible={this.state.mostrarError}
             mensaje={this.state.error}
-            onClose={this.onBaneErrorClose}
+            onBotonClick={this.onBanerErrorClose}
+            mostrarBoton={true}
             className={classes.contenedorError}
           />
           <DialogContent style={{ padding: 0 }}>
@@ -465,56 +517,64 @@ class DialogoTurnoDetalle extends React.Component {
                   )}
 
                   {/* Proteger turno */}
-                  {[ESTADO_DISPONIBLE_KEY_VALUE].indexOf(estadoKeyValue) != -1 &&
-                    this.state.data &&
-                    this.state.data.protegido == false && (
-                      <Button variant="outlined" onClick={this.proteger}>
-                        <IconLockOutlined />
-                        Proteger
-                      </Button>
-                    )}
+                  {[ESTADO_DISPONIBLE_KEY_VALUE].indexOf(estadoKeyValue) != -1 && this.state.data && this.state.data.protegido == false && (
+                    <Button variant="outlined" onClick={this.proteger}>
+                      <IconLockOutlined />
+                      Proteger
+                    </Button>
+                  )}
 
                   {/* Desproteger turno */}
-                  {[ESTADO_DISPONIBLE_KEY_VALUE].indexOf(estadoKeyValue) != -1 &&
-                    this.state.data &&
-                    this.state.data.protegido == true && (
-                      <Button variant="outlined" onClick={this.desproteger}>
-                        <IconLockOpenOutlined />
-                        Desproteger
-                      </Button>
-                    )}
+                  {[ESTADO_DISPONIBLE_KEY_VALUE].indexOf(estadoKeyValue) != -1 && this.state.data && this.state.data.protegido == true && (
+                    <Button variant="outlined" onClick={this.desproteger}>
+                      <IconLockOpenOutlined />
+                      Desproteger
+                    </Button>
+                  )}
+
+                  {/* Agregar nota */}
+                  <Button variant="outlined" onClick={this.mostrarDialogoAgregarNota}>
+                    <IconSpeakerNotesOutlined />
+                    Agregar nota
+                  </Button>
                 </div>
               </div>
 
               {/* Alerta protegido */}
-              {this.state.data &&
-                this.state.data.protegido == true && (
-                  <div style={{ backgroundColor: orange["600"], padding: "8px", paddingLeft: "24px", paddingRight: "24px" }}>
-                    <Typography variant="body1" style={{ color: "white" }}>
-                      Su turno se encuentra protegido
-                    </Typography>
+              {this.state.data && this.state.data.protegido == true && (
+                <div style={{ backgroundColor: orange["600"], padding: "8px", paddingLeft: "24px", paddingRight: "24px" }}>
+                  <Typography variant="body1" style={{ color: "white" }}>
+                    Su turno se encuentra protegido
+                  </Typography>
+                </div>
+              )}
+
+              <div className={classes.contenedorBody}>
+                {this.state.data && this.state.data.notas && this.state.data.notas.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <Typography variant="headline">Notas</Typography>
+                    {this.state.data.notas.map((nota, index) => {
+                      return <Nota data={nota} key={index} classes={classes} />;
+                    })}
+                    {this.state.data.notas.length == 0 && <Typography variant="body1">Todavía no hay ninguna nota registrada</Typography>}
                   </div>
                 )}
 
-              <div className={classes.contenedorBody}>
                 {dataUsuarioAsociado && (
-                  <React.Fragment>
+                  <div style={{ marginBottom: 16 }}>
                     <Typography variant="headline">Usuario asociado</Typography>
                     <UsuarioDetalle data={dataUsuarioAsociado} />
-                  </React.Fragment>
+                  </div>
                 )}
 
-                {this.state.data &&
-                  this.state.data.personalAsociado &&
-                  this.state.data.personalAsociado.length != 0 && (
-                    <React.Fragment>
-                      {dataUsuarioAsociado && <div style={{ height: "16px" }} />}
-                      <Typography variant="headline">Personal asociado</Typography>
-                      {this.state.data.personalAsociado.map((item, index) => {
-                        return <UsuarioDetalle key={index} data={item} />;
-                      })}
-                    </React.Fragment>
-                  )}
+                {this.state.data && this.state.data.personalAsociado && this.state.data.personalAsociado.length != 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <Typography variant="headline">Personal asociado</Typography>
+                    {this.state.data.personalAsociado.map((item, index) => {
+                      return <UsuarioDetalle key={index} data={item} />;
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </DialogContent>
@@ -599,7 +659,51 @@ class DialogoTurnoDetalle extends React.Component {
           visible={this.state.dialogoHistorialEstadoVisible}
           onClose={this.onDialogoHistorialEstadoClose}
         />
+
+        {/* Dialogo agregar nota */}
+        <DialogoInput
+          visible={this.state.dialogoAgregarNotaVisible || false}
+          mostrarBaner={this.state.dialogoAgregarNotaErrorVisible || false}
+          textoBaner={this.state.dialogoAgregarNotaError || ""}
+          onBotonBanerClick={this.onDialogoAgregarNotaErrorClose}
+          mostrarBotonBaner={true}
+          titulo="Agregar nota"
+          multiline={true}
+          tituloInput="Mensaje de la nota"
+          placeholder="Contenido de la nota ..."
+          textoSi="Agregar"
+          autoCerrarBotonSi={false}
+          textoNo="Cancelar"
+          onClose={this.onDialogoAgregarNotaClose}
+          onBotonSiClick={this.agregarNota}
+          cargando={this.state.dialogoAgregarNotaCargando || false}
+        />
       </React.Fragment>
+    );
+  }
+}
+
+class Nota extends React.PureComponent {
+  render() {
+    const { data, classes } = this.props;
+
+    let nombre = data.usuarioCreador ? data.usuarioCreador.nombre + " " + data.usuarioCreador.apellido : "";
+    let fecha = DateUtils.toDateTimeString(DateUtils.toDateTime(data.fechaAlta));
+
+    return (
+      <ListItem>
+        <ListItemAvatar>
+          <IconSpeakerNotesOutlined />
+        </ListItemAvatar>
+        <ListItemText
+          primary={data.contenido}
+          secondary={
+            <Typography variant="caption">
+              Por <a className={classes.linkInteres}>{nombre}</a> el {fecha}
+            </Typography>
+          }
+        />
+      </ListItem>
     );
   }
 }

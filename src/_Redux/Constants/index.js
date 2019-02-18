@@ -12,3 +12,6 @@ export const MAIN_CONTENT_CARGANDO = "MAIN_CONTENT_CARGANDO";
 
 //Notificaciones
 export const NOTIFICACIONES_SET = "NOTIFICACIONES_SET";
+
+//General
+export const GENERAL_VISIBLE = "GENERAL_VISIBLE";

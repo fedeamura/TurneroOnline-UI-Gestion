@@ -1,5 +1,5 @@
 import _ from "lodash";
-import DateUtils from '@Componentes/Utils/Date';
+import DateUtils from "@Componentes/Utils/Date";
 
 const ESTADO_VENCIDO_KEY_VALUE = -1;
 const ESTADO_DISPONIBLE_KEY_VALUE = 1;
@@ -45,7 +45,7 @@ const metodos = {
     });
   },
   asignar: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/Asignar/" + comando.idTurno + "/" + comando.idUsuario;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Asignar/" + comando.idUsuario;
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "POST",
@@ -53,7 +53,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -82,7 +82,7 @@ const metodos = {
     });
   },
   completar: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/Completar/" + comando.idTurno;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Completar";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "POST",
@@ -90,7 +90,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -127,7 +127,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         },
         body: JSON.stringify({ id: comando.idTurno, motivo: comando.motivo })
       })
@@ -165,7 +165,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         },
         body: JSON.stringify({ id: comando.idTurno, motivo: comando.motivo })
       })
@@ -195,7 +195,7 @@ const metodos = {
     });
   },
   ponerEnEstadoDisponible: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/PonerEnEstadoDisponible/" + comando.idTurno;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/PonerEnEstadoDisponible";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "POST",
@@ -203,7 +203,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -232,7 +232,7 @@ const metodos = {
     });
   },
   ponerEnEstadoReservado: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/PonerEnEstadoReservado/" + comando.idTurno;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/PonerEnEstadoReservado";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "POST",
@@ -240,7 +240,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -276,8 +276,7 @@ const metodos = {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--Token": localStorage.getItem("token")
         },
         body: JSON.stringify({
           fechaInicio: comando.fechaInicio,
@@ -330,8 +329,7 @@ const metodos = {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--Token": localStorage.getItem("token")
         },
         body: JSON.stringify({
           idUsuario: comando.idUsuario,
@@ -383,8 +381,52 @@ const metodos = {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--Token": localStorage.getItem("token")
+        }
+      })
+        .then(data => {
+          if (data.ok == false) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+          return data.json();
+        })
+        .then(data => {
+          if (data == undefined) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          let dataTurno = data.return;
+          if (dataTurno.estadoKeyValue == ESTADO_DISPONIBLE_KEY_VALUE) {
+            let fecha = DateUtils.toDateTime(dataTurno.fecha);
+            if (fecha.getTime() < new Date().getTime()) {
+              dataTurno.estadoKeyValue = ESTADO_VENCIDO_KEY_VALUE;
+              dataTurno.estadoNombre = "Vencido";
+              dataTurno.estadoColor = "#9E9E9E";
+            }
+          }
+          resolve(dataTurno);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  getDetalleByCodigo: comando => {
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Detalle/Codigo/" + comando.codigo + "/" + comando.año;
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token")
         }
       })
         .then(data => {
@@ -422,7 +464,7 @@ const metodos = {
     });
   },
   proteger: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/Proteger?id=" + comando.idTurno;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Proteger";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "PUT",
@@ -430,7 +472,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -459,7 +501,7 @@ const metodos = {
     });
   },
   desproteger: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/Desproteger?id=" + comando.idTurno;
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Desproteger";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "PUT",
@@ -467,7 +509,7 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--IdTurno": comando.idTurno
         }
       })
         .then(data => {
@@ -503,9 +545,136 @@ const metodos = {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "--Token": localStorage.getItem("token"),
-          "--IdEntidad": comando.idEntidad
+          "--Token": localStorage.getItem("token")
         }
+      })
+        .then(data => {
+          if (data.ok == false) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+          return data.json();
+        })
+        .then(data => {
+          if (data == undefined) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  getColisionesNuevoTurno: comando => {
+    console.log(comando);
+    const url = window.Config.WS_TURNERO + "/v1/Turno/ColisionesNuevoTurno";
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token"),
+          "--IdTurnero": comando.idTurnero
+        },
+        body: JSON.stringify({
+          idTurnero: comando.idTurnero,
+          fecha: comando.fecha,
+          protegido: comando.protegido,
+          duracion: comando.duracion
+        })
+      })
+        .then(data => {
+          if (data.ok == false) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+          return data.json();
+        })
+        .then(data => {
+          if (data == undefined) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  insertar: comando => {
+    console.log(comando);
+    const url = window.Config.WS_TURNERO + "/v1/Turno";
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token"),
+          "--IdTurnero": comando.idTurnero
+        },
+        body: JSON.stringify({
+          idTurnero: comando.idTurnero,
+          fecha: comando.fecha,
+          protegido: comando.protegido,
+          duracion: comando.duracion
+        })
+      })
+        .then(data => {
+          if (data.ok == false) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+          return data.json();
+        })
+        .then(data => {
+          if (data == undefined) {
+            reject("Error procesando la solicitud");
+            return;
+          }
+
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  agregarNota: comando => {
+    const url = window.Config.WS_TURNERO + "/v1/Turno/Nota";
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token"),
+          "--IdTurno": comando.idTurno
+        },
+        body: JSON.stringify({
+          contenido: comando.contenido
+        })
       })
         .then(data => {
           if (data.ok == false) {

@@ -19,9 +19,11 @@ import { mostrarAlertaVerde, mostrarAlertaNaranja } from "@Redux/Actions/alerta"
 import _ from "lodash";
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
-import { IconButton, Typography, Grid, FormControlLabel, Checkbox, Tooltip } from "@material-ui/core";
+import { IconButton, Typography, Grid, FormControlLabel, Checkbox, Tooltip, TextField } from "@material-ui/core";
 import BigCalendar from "react-big-calendar";
-import red from "@material-ui/core/colors/red";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import InputAdornment from "@material-ui/core/InputAdornment";
 import orange from "@material-ui/core/colors/orange";
 
 import IconKeyboardArrowLeftOutlined from "@material-ui/icons/KeyboardArrowLeftOutlined";
@@ -36,9 +38,10 @@ import MiCard from "@Componentes/MiCard";
 import MiTabla from "@Componentes/MiTabla";
 import BotonesTabla from "./BotonesTabla";
 import DialogoTurnoDetalle from "@UI/_Dialogos/TurnoDetalle";
-// import DialogoConfirmacion from "@UI/_Dialogos/Confirmacion";
 import DialogoSelectorUsuario from "@UI/_Dialogos/SelectorUsuario";
-// import DialogoInput from "@UI/_Dialogos/Input";
+import DialogoBusquedaPorCodigo from "@UI/_Dialogos/TurnoBusquedaPorCodigo";
+import DialogoTurnoNuevo from "../_Dialogos/TurnoNuevo";
+
 import DateUtils from "@Componentes/Utils/Date";
 
 //Recursos
@@ -118,21 +121,12 @@ class ConsultaTurnos extends React.Component {
       // Dialogo Turno Detalle
       dialogoTurnoDetalleVisible: false,
       dialogoTurnoDetalleId: undefined,
-      //Dialogo Cancelar Reserva
-      // dialogoCancelarReservaVisible: false,
-      // dialogoCancelarReservaId: undefined,
-      //Dialogo selector usuario
-      // dialogoSelectorUsuarioVisible: false,
-      // asignarUsuarioTurnoId: undefined,
-      //Dialogo cancelar turno
-      // dialogoCancelarTurnoVisible: false,
-      // cancelarTurnoId: undefined,
-      //Dialogo completar turno
-      // dialogoConfirmacionCompletarTurnoVisible: false,
-      // completarTurnoId: undefined,
       //Dialogo seleccionar usuario para busqueda
       dialogoSelectorUsuarioParaBusquedaVisible: false,
-      usuarioBusqueda: undefined
+      usuarioBusqueda: undefined,
+      //Menu Entidad
+      anchorBotonMenuEntidad: undefined,
+      filtroTextoTabla: ""
     };
   }
 
@@ -172,7 +166,9 @@ class ConsultaTurnos extends React.Component {
             item.fechaDate = DateUtils.toDateTime(item.fecha);
           });
 
-          this.setState({ data: turnos, cardVisible: true });
+          this.setState({ data: turnos, cardVisible: true }, () => {
+            this.filtrar();
+          });
         })
         .catch(error => {
           this.setState({ error: error, mostrarError: true });
@@ -183,119 +179,48 @@ class ConsultaTurnos extends React.Component {
     });
   };
 
-  // cancelarReservaTurno = motivo => {
-  //   if (motivo.trim().length == 0) {
-  //     this.props.mostrarAlertaNaranja({ texto: "Ingrese el motivo de cancelación de la reserva" });
-  //     return;
-  //   }
-  //   this.onDialogoCancelarReservaTurnoClose();
-
-  //   this.setState({ cargando: true, mostrarError: false }, () => {
-  //     Rules_Turno.cancelarReserva({
-  //       idEntidad: this.props.rol.entidadId,
-  //       idTurno: this.state.dialogoCancelarReservaId,
-  //       motivo: motivo.trim()
-  //     })
-  //       .then(() => {
-  //         this.buscar();
-  //       })
-  //       .catch(error => {
-  //         this.setState({ cargando: false, mostrarError: true, error: error });
-  //       });
-  //   });
-  // };
-
-  // asignarUsuario = usuario => {
-  //   this.onDialogoSelectorUsuarioClose();
-
-  //   this.setState({ cargando: true, mostrarError: false }, () => {
-  //     Rules_Turno.asignar({
-  //       idEntidad: this.props.rol.entidadId,
-  //       idTurno: this.state.asignarUsuarioTurnoId,
-  //       idUsuario: usuario.id
-  //     })
-  //       .then(() => {
-  //         this.props.mostrarAlertaVerde({ texto: "Turno asigando correctamente" });
-  //         this.buscar();
-  //       })
-  //       .catch(error => {
-  //         this.setState({ cargando: false, mostrarError: true, error: error });
-  //       });
-  //   });
-  // };
-
-  // cancelarTurno = motivo => {
-  //   if (motivo.trim().length == 0) {
-  //     this.props.mostrarAlertaNaranja({ texto: "Ingrese el motivo de cancelación" });
-  //     return;
-  //   }
-  //   this.onDialogoCancelarTurnoClose();
-  //   this.setState({ cargando: true, mostrarError: false }, () => {
-  //     Rules_Turno.cancelar({
-  //       idEntidad: this.props.rol.entidadId,
-  //       idTurno: this.state.cancelarTurnoId,
-  //       motivo: motivo.trim()
-  //     })
-  //       .then(() => {
-  //         this.props.mostrarAlertaVerde({ texto: "Turno cancelado correctamente" });
-  //         this.buscar();
-  //       })
-  //       .catch(error => {
-  //         this.setState({ cargando: false, mostrarError: true, error: error });
-  //       });
-  //   });
-  // };
-
-  // completarTurno = () => {
-  //   this.setState({ cargando: true, mostrarError: false }, () => {
-  //     Rules_Turno.completar({
-  //       idEntidad: this.props.rol.entidadId,
-  //       idTurno: this.state.completarTurnoId
-  //     })
-  //       .then(() => {
-  //         this.props.mostrarAlertaVerde({ texto: "Turno completado correctamente" });
-  //         this.buscar();
-  //       })
-  //       .catch(error => {
-  //         this.setState({ cargando: false, mostrarError: true, error: error });
-  //       });
-  //   });
-  // };
-
   buscarPorUsuario = usuario => {
-    this.setState({ dialogoSelectorUsuarioParaBusquedaVisible: false, cargando: true }, () => {
-      Rules_Turno.getDeUsuario({
-        idEntidad: this.props.rol.entidadId,
-        idTurnero: this.state.idTurnero,
-        idUsuario: usuario.id
-      })
-        .then(data => {
-          let { filtroEstados } = this.state;
-          filtroEstados[ESTADO_VENCIDO_KEY_VALUE] = false;
-          filtroEstados[ESTADO_DISPONIBLE_KEY_VALUE] = false;
-          filtroEstados[ESTADO_CANCELADO_KEY_VALUE] = false;
-          filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
-          filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
-
-          data.forEach(item => {
-            item.fechaDate = DateUtils.toDateTime(item.fecha);
-          });
-
-          this.setState({
-            usuarioBusqueda: usuario,
-            cargando: false,
-            data: data,
-            filtroEstados: filtroEstados,
-            filtroProtegidos: undefined
-          });
+    this.setState(
+      { dialogoSelectorUsuarioParaBusquedaVisible: false, cargando: true, diaSeleccionado: undefined, filtroTextoTabla: "" },
+      () => {
+        Rules_Turno.getDeUsuario({
+          idEntidad: this.props.rol.entidadId,
+          idTurnero: this.state.idTurnero,
+          idUsuario: usuario.id
         })
-        .catch(error => {
-          this.setState({ mostrarError: true, error: error });
-        })
-        .finally(() => {
-          this.setState({ cargando: false });
-        });
-    });
+          .then(data => {
+            let { filtroEstados } = this.state;
+            filtroEstados[ESTADO_VENCIDO_KEY_VALUE] = false;
+            filtroEstados[ESTADO_DISPONIBLE_KEY_VALUE] = false;
+            filtroEstados[ESTADO_CANCELADO_KEY_VALUE] = false;
+            filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
+            filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
+
+            data.forEach(item => {
+              item.fechaDate = DateUtils.toDateTime(item.fecha);
+            });
+
+            this.setState(
+              {
+                usuarioBusqueda: usuario,
+                cargando: false,
+                data: data,
+                filtroEstados: filtroEstados,
+                filtroProtegidos: undefined
+              },
+              () => {
+                this.filtrar();
+              }
+            );
+          })
+          .catch(error => {
+            this.setState({ mostrarError: true, error: error });
+          })
+          .finally(() => {
+            this.setState({ cargando: false });
+          });
+      }
+    );
   };
 
   onBotonFiltrosClick = () => {
@@ -361,7 +286,9 @@ class ConsultaTurnos extends React.Component {
   handleCheckboxEstadoChange = e => {
     let filtroEstados = this.state.filtroEstados;
     filtroEstados[e.target.name] = e.target.checked;
-    this.setState({ filtroEstados: filtroEstados });
+    this.setState({ filtroEstados: filtroEstados }, () => {
+      this.filtrar();
+    });
   };
 
   handleCheckboxFiltroProtegidoChange = e => {
@@ -369,7 +296,9 @@ class ConsultaTurnos extends React.Component {
       this.setState({ filtroProtegidos: undefined });
       return;
     }
-    this.setState({ filtroProtegidos: e.target.checked });
+    this.setState({ filtroProtegidos: e.target.checked }, () => {
+      this.filtrar();
+    });
   };
 
   onDiaClick = dia => {
@@ -392,7 +321,9 @@ class ConsultaTurnos extends React.Component {
     _.forEach(estados, estado => {
       filtroEstados["" + estado.keyValue] = true;
     });
-    this.setState({ diaSeleccionado: dia, filtroEstados });
+    this.setState({ diaSeleccionado: dia, filtroEstados }, () => {
+      this.filtrar();
+    });
   };
 
   orderEstado = (a, b) => {
@@ -464,7 +395,7 @@ class ConsultaTurnos extends React.Component {
     filtroEstados[ESTADO_CANCELADO_KEY_VALUE] = true;
     filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
     filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
-    this.setState({ usuarioBusqueda: undefined, filtroEstados: filtroEstados, filtroProtegidos: undefined }, () => {
+    this.setState({ usuarioBusqueda: undefined, filtroEstados: filtroEstados, filtroProtegidos: undefined, filtroTextoTabla: "" }, () => {
       this.buscar();
     });
   };
@@ -511,9 +442,73 @@ class ConsultaTurnos extends React.Component {
     filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
     filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
 
-    this.setState({ filtroProtegidos: undefined, usuarioBusqueda: undefined, filtroEstados: filtroEstados, mostrarFiltros: false }, () => {
+    this.setState(
+      {
+        filtroProtegidos: undefined,
+        usuarioBusqueda: undefined,
+        filtroEstados: filtroEstados,
+        mostrarFiltros: false,
+        diaSeleccionado: undefined
+      },
+      () => {
+        this.buscar();
+      }
+    );
+  };
+
+  onBotonCambiarTurneroClick = () => {
+    this.setState({ anchorBotonMenuEntidad: undefined });
+    this.props.redireccionar("/SeleccionarEntidad");
+  };
+
+  mostrarDialogoBuscarPorCodigo = () => {
+    this.setState({ dialogoBuscarPorCodigoVisible: true });
+  };
+
+  onDialogoBuscarPorCodigoClose = () => {
+    this.setState({ dialogoBuscarPorCodigoVisible: false });
+  };
+
+  onTurnoModificadoDesdeBusquedaPorCodigo = () => {
+    if (this.state.usuarioBusqueda != undefined) {
+      this.buscarPorUsuario(this.state.usuarioBusqueda);
+    } else {
       this.buscar();
-    });
+    }
+  };
+
+  onBotonMenuEntidadClick = e => {
+    this.setState({ anchorBotonMenuEntidad: e.currentTarget });
+  };
+
+  onMenuEntidadClose = () => {
+    this.setState({ anchorBotonMenuEntidad: undefined });
+  };
+
+  onBotonVerMasInformacionEntidadClick = () => {
+    this.setState({ anchorBotonMenuEntidad: undefined });
+    this.props.redireccionar("/Entidad/" + this.state.dataTurnero.entidadId);
+  };
+
+  mostrarDialogoTurnoNuevo = () => {
+    this.setState({ dialogoTurnoNuevoVisible: true });
+  };
+
+  onDialogoTurnoNuevoClose = () => {
+    this.setState({ dialogoTurnoNuevoVisible: false });
+  };
+
+  onTurnoCreado = turno => {
+    if (this.state.usuarioBusqueda != undefined) {
+      this.buscarPorUsuario(this.state.usuarioBusqueda);
+    } else {
+      this.buscar();
+    }
+    this.setState({ dialogoTurnoDetalleVisible: true, dialogoTurnoDetalleId: turno.id });
+  };
+
+  onToolbarTituloClick = () => {
+    this.props.redireccionar("/SeleccionarEntidad");
   };
 
   render() {
@@ -522,7 +517,13 @@ class ConsultaTurnos extends React.Component {
 
     return (
       <React.Fragment>
-        <_MiPagina full cargando={this.state.cargando} toolbarLeftIconVisible={false} onToolbarTituloClick={() => {}}>
+        <_MiPagina
+          full
+          cargando={this.state.cargando}
+          toolbarChildren={this.renderToolbarChildren()}
+          toolbarLeftIconVisible={false}
+          onToolbarTituloClick={this.onToolbarTituloClick}
+        >
           {/* Error */}
           <MiBaner
             mensaje={this.state.error}
@@ -531,33 +532,24 @@ class ConsultaTurnos extends React.Component {
             onClose={this.onBanerErrorClose}
           />
 
-          {/* {this.state.dataTurnero && (
-            <div style={{ display: "flex", alignItems: "center", padding: "8px" }}>
-              <Typography variant="body1">Turnos del turnero</Typography>
-              <Typography variant="body2">{this.state.dataTurnero.nombre}</Typography>
-              <Typography variant="body1" className={classes.link}>
-                Seleccionar otro turnero
-              </Typography>
-            </div>
-          )} */}
+          <Grid container spacing={16}>
+            <Grid item xs={12} md={4} lg={3} className={classNames(classes.contenedorCalendario, this.state.dataTurnero && "visible")}>
+              {this.renderInfoContextual()}
 
-          <Grid container>
-            <Grid item xs={12}>
-              <Grid container spacing={16}>
-                <Grid item xs={12} md={4} lg={3}>
-                  {this.renderCalendario()}
+              <Button
+                variant="extendedFab"
+                style={{ marginTop: 16, marginBottom: 32, backgroundColor: "white" }}
+                onClick={this.mostrarDialogoTurnoNuevo}
+              >
+                <Icon style={{ marginRight: 8, color: "green" }}>add</Icon>
+                Nuevo turno
+              </Button>
 
-                  {this.state.usuarioBusqueda && (
-                    <MiCard className={classes.cardInfoBusquedaPorUsuario}>
-                      <Icon>help</Icon>
-                      <Typography variant="body1">Mientras esta buscando por usuario, no puede usar el calendario</Typography>
-                    </MiCard>
-                  )}
-                </Grid>
-                <Grid item xs={12} md={8} lg={9}>
-                  {this.renderContenedorTabla()}
-                </Grid>
-              </Grid>
+              {this.renderCalendario()}
+              {this.renderFiltrosActivos()}
+            </Grid>
+            <Grid item xs={12} md={8} lg={9}>
+              {this.renderContenedorTabla()}
             </Grid>
           </Grid>
 
@@ -568,64 +560,120 @@ class ConsultaTurnos extends React.Component {
             onClose={this.onDialogoTurnoDetalleClose}
           />
 
-          {/* Dialogo cancelar reserva turno */}
-          {/* <DialogoInput
-            visible={this.state.dialogoCancelarReservaVisible}
-            titulo="Motivo de cancelación de reserva"
-            mensaje="Tenga en cuenta que el motivo indicado sera visible por el vecino que solicitó el turno."
-            tituloInput="Motivo"
-            multiline={true}
-            placeholder="Ingrese una descripción..."
-            textoSi="Aceptar"
-            autoCerrarBotonSi={false}
-            textoNo="Cancelar"
-            onClose={this.onDialogoCancelarReservaTurnoClose}
-            onBotonSiClick={this.cancelarReservaTurno}
-          /> */}
-
-          {/* Dialogo selector usuario */}
-          {/* <DialogoSelectorUsuario
-            visible={this.state.dialogoSelectorUsuarioVisible}
-            onClose={this.onDialogoSelectorUsuarioClose}
-            onUsuarioSeleccionado={this.asignarUsuario}
-          /> */}
-
-          {/* Dialogo cancelar turno */}
-          {/* <DialogoInput
-            visible={this.state.dialogoCancelarTurnoVisible}
-            titulo="Motivo de cancelación de turno"
-            mensaje="Tenga en cuenta que el motivo indicado sera visible por el vecino que solicitó el turno."
-            tituloInput="Motivo"
-            multiline={true}
-            placeholder="Ingrese una descripción..."
-            textoSi="Aceptar"
-            autoCerrarBotonSi={false}
-            textoNo="Cancelar"
-            onClose={this.onDialogoCancelarTurnoClose}
-            onBotonSiClick={this.cancelarTurno}
-          /> */}
-
-          {/* Dialogo confirmacion completar turno */}
-          {/* <DialogoConfirmacion
-            visible={this.state.dialogoConfirmacionCompletarTurnoVisible}
-            mensaje="¿Desea completar el turno?"
-            onClose={this.onDialogoConfirmacionCompletarTurnoClose}
-            onBotonSiClick={this.completarTurno}
-          /> */}
-
           {/* Dialogo selector usuario para busqueda */}
           <DialogoSelectorUsuario
             visible={this.state.dialogoSelectorUsuarioParaBusquedaVisible}
             onClose={this.onDialogoSelectorUsuarioParaBusquedaClose}
             onUsuarioSeleccionado={this.buscarPorUsuario}
           />
+
+          {/* Turno nuevo */}
+          <DialogoTurnoNuevo
+            visible={this.state.dialogoTurnoNuevoVisible}
+            onClose={this.onDialogoTurnoNuevoClose}
+            idTurnero={this.state.dataTurnero && this.state.dataTurnero.id}
+            fecha={this.state.diaSeleccionado || new Date()}
+            callback={this.onTurnoCreado}
+          />
         </_MiPagina>
       </React.Fragment>
     );
   }
 
+  renderToolbarChildren() {
+    return (
+      <React.Fragment>
+        <Tooltip title="Buscar por código">
+          <IconButton onClick={this.mostrarDialogoBuscarPorCodigo}>
+            <Icon>search</Icon>
+          </IconButton>
+        </Tooltip>
+
+        <DialogoBusquedaPorCodigo
+          visible={this.state.dialogoBuscarPorCodigoVisible}
+          onClose={this.onDialogoBuscarPorCodigoClose}
+          onTurnoModificado={this.onTurnoModificadoDesdeBusquedaPorCodigo}
+        />
+      </React.Fragment>
+    );
+  }
+
+  renderInfoContextual() {
+    const { classes } = this.props;
+
+    return (
+      <div className={classNames(classes.contenedorInfoTurnero, this.state.dataTurnero && "visible")}>
+        <MiCard className={classes.imagenTurnero} padding={false}>
+          <div
+            className="imagen"
+            style={{
+              width: 72,
+              height: 72,
+              backgroundImage: `url(${this.state.dataTurnero ? this.state.dataTurnero.entidadImagen : ""})`
+            }}
+          />
+        </MiCard>
+        <div className="textos">
+          <Typography variant="body1">
+            <b>Entidad: </b>
+            {this.state.dataTurnero ? this.state.dataTurnero.entidadNombre : ""}
+          </Typography>
+          <Typography variant="body1">
+            <b>Trámite: </b>
+            {this.state.dataTurnero ? this.state.dataTurnero.tramiteNombre : ""}
+          </Typography>
+          <Typography variant="body1">
+            <b>Turnero: </b>
+            {this.state.dataTurnero ? this.state.dataTurnero.nombre : ""}
+          </Typography>
+        </div>
+        <IconButton onClick={this.onBotonMenuEntidadClick}>
+          <Icon>more_vert</Icon>
+        </IconButton>
+
+        <Menu
+          id="menu_entidad"
+          anchorEl={this.state.anchorBotonMenuEntidad}
+          getContentAnchorEl={null}
+          className={classes.menuEntidad}
+          anchorOrigin={{ vertical: "top", horizontal: "left" }}
+          open={Boolean(this.state.anchorBotonMenuEntidad)}
+          onClose={this.onMenuEntidadClose}
+        >
+          <MenuItem divider onClick={this.onBotonVerMasInformacionEntidadClick}>
+            Ver más información
+          </MenuItem>
+          <MenuItem onClick={this.onBotonCambiarTurneroClick}>Cambiar turnero</MenuItem>
+        </Menu>
+      </div>
+    );
+  }
+
+  onView = () => {};
+
   renderCalendario() {
     const { classes } = this.props;
+    const { usuarioBusqueda } = this.state;
+
+    return (
+      <MiCard padding={false} className={classNames(classes.cardCalendario, usuarioBusqueda === undefined && "visible")}>
+        <MiCalendario
+          estados={this.state.estados}
+          data={this.state.data}
+          diaSeleccionado={this.state.diaSeleccionado}
+          fechaCalendario={this.state.fechaCalendario}
+          classes={classes}
+          usuarioBusqueda={usuarioBusqueda}
+          onDiaClick={this.onDiaClick}
+          onBotonMesAnteriorClick={this.onBotonMesAnteriorClick}
+          onBotonMesSiguienteClick={this.onBotonMesSiguienteClick}
+        />
+      </MiCard>
+    );
+  }
+
+  renderFiltrosActivos() {
+    let { classes } = this.props;
 
     let tieneFiltros = false;
     let filtroEstados = [];
@@ -655,113 +703,55 @@ class ConsultaTurnos extends React.Component {
     }
 
     return (
-      <React.Fragment>
-        <MiCard padding={false} className={classNames(classes.cardCalendario, this.state.usuarioBusqueda === undefined && "visible")}>
-          <BigCalendar
-            view="month"
-            onView={() => {}}
-            onNavigate={() => {}}
-            date={this.state.fechaCalendario}
-            className={classNames(classes.calendario)}
-            views={{ month: true }}
-            culture="es"
-            localizer={localizer}
-            onDrillDown={this.onDiaClick}
-            events={[]}
-            startAccessor="start"
-            endAccessor="end"
-            components={{
-              month: {
-                toolbar: props => {
-                  return (
-                    <CalendarioMes_Encabezado
-                      props={props}
-                      classes={classes}
-                      onBotonMesAnteriorClick={this.onBotonMesAnteriorClick}
-                      onBotonMesSiguienteClick={this.onBotonMesSiguienteClick}
-                    />
-                  );
-                },
-                dateHeader: props => {
-                  let diaCalendario = props.date;
-                  let seleccionado = this.state.diaSeleccionado && DateUtils.esMismoDia(this.state.diaSeleccionado, diaCalendario);
+      <MiCard rootClassName={classes.cardFiltrosActivos}>
+        <Typography variant="headline">Filtros</Typography>
 
-                  let indicadores = [];
+        {this.state.usuarioBusqueda === undefined && this.state.diaSeleccionado === undefined && (
+          <Typography variant="body1">
+            <b>Mes: </b> {this.getNombreMes(this.state.fechaCalendario.getMonth() + 1)}
+          </Typography>
+        )}
+        {this.state.usuarioBusqueda === undefined && this.state.diaSeleccionado !== undefined && (
+          <Typography variant="body1">
+            <b>Dia: </b> {DateUtils.toDateString(this.state.diaSeleccionado)}
+          </Typography>
+        )}
 
-                  _.forEach(this.state.estados, estado => {
-                    let conTurnosEnEstado = _.find(this.state.data, item => {
-                      let fechaTurno = DateUtils.toDateTime(item.fecha);
-                      let mismoDia = DateUtils.esMismoDia(fechaTurno, diaCalendario);
-                      return item.estadoKeyValue == estado.keyValue && mismoDia == true;
-                    });
-                    if (conTurnosEnEstado) indicadores.push(conTurnosEnEstado.estadoColor);
-                  });
+        {this.state.usuarioBusqueda && (
+          <Typography variant="body1">
+            <b>Usuario: </b> {`${this.state.usuarioBusqueda.nombre} ${this.state.usuarioBusqueda.apellido}`}
+          </Typography>
+        )}
 
-                  if (this.state.usuarioBusqueda) {
-                    seleccionado = false;
-                    indicadores = [];
-                  }
+        {this.state.filtroProtegidos !== undefined && (
+          <Typography variant="body1">
+            <b>Protegidos: </b> {this.state.filtroProtegidos === true ? "Si" : "No"}
+          </Typography>
+        )}
 
-                  return (
-                    <CalendarioMes_Dia
-                      deshabilitado={false}
-                      conTurnos={false}
-                      classes={classes}
-                      seleccionado={seleccionado}
-                      indicadores={indicadores}
-                      onClick={this.onDiaClick}
-                      props={props}
-                    />
-                  );
-                }
-              }
-            }}
-          />
-        </MiCard>
-        <MiCard rootClassName={classes.cardFiltrosActivos}>
-          <Typography variant="headline">Filtros</Typography>
+        {conFiltroEstados === true && (
+          <Typography variant="body1">
+            <b>Estados: </b>
+            {filtroEstados.join(", ")}
+          </Typography>
+        )}
 
-          {this.state.usuarioBusqueda === undefined && this.state.diaSeleccionado === undefined && (
-            <Typography variant="body1">
-              <b>Mes: </b> {this.getNombreMes(this.state.fechaCalendario.getMonth() + 1)}
-            </Typography>
-          )}
-          {this.state.usuarioBusqueda === undefined && this.state.diaSeleccionado !== undefined && (
-            <Typography variant="body1">
-              <b>Dia: </b> {DateUtils.toDateString(this.state.diaSeleccionado)}
-            </Typography>
-          )}
-
-          {this.state.usuarioBusqueda && (
-            <Typography variant="body1">
-              <b>Usuario: </b> {`${this.state.usuarioBusqueda.nombre} ${this.state.usuarioBusqueda.apellido}`}
-            </Typography>
-          )}
-
-          {this.state.filtroProtegidos !== undefined && (
-            <Typography variant="body1">
-              <b>Protegidos: </b> {this.state.filtroProtegidos === true ? "Si" : "No"}
-            </Typography>
-          )}
-
-          {conFiltroEstados === true && (
-            <Typography variant="body1">
-              <b>Estados: </b>
-              {filtroEstados.join(", ")}
-            </Typography>
-          )}
-
-          {tieneFiltros && (
-            <div className={classes.contenedorBotones} style={{ marginTop: "16px" }}>
-              <Button variant="outlined" color="primary" onClick={this.onBotonQuitarFiltrosClick}>
-                Quitar filtros
-              </Button>
-            </div>
-          )}
-        </MiCard>
-      </React.Fragment>
+        {tieneFiltros && (
+          <div className={classes.contenedorBotones} style={{ marginTop: "16px" }}>
+            <Button variant="outlined" color="primary" onClick={this.onBotonQuitarFiltrosClick}>
+              Quitar filtros
+            </Button>
+          </div>
+        )}
+      </MiCard>
     );
   }
+
+  onFiltroTextoChange = e => {
+    this.setState({ filtroTextoTabla: e.currentTarget.value }, () => {
+      this.filtrar();
+    });
+  };
 
   renderContenedorTabla() {
     const { classes } = this.props;
@@ -780,40 +770,40 @@ class ConsultaTurnos extends React.Component {
         <div className={classes.contenedorTabla}>
           <div className="main">
             <div className={classes.contenedorTitulo}>
-              <Typography variant="title">{titulo}</Typography>
+              <Typography variant="title" className="titulo">
+                {titulo}
+              </Typography>
 
-              {/* Boton cancelar busqueda por usuario */}
-              {this.state.usuarioBusqueda !== undefined && (
-                <IconButton
-                  style={{ color: red["500"] }}
-                  onClick={this.cancelarBusquedaPorUsuario}
-                  className={classNames(classes.botonBusquedaPorUsuario, this.state.mostrarFiltros == false && "visible")}
-                >
-                  <Icon>clear</Icon>
-                </IconButton>
-              )}
+              <div className={"filtros"}>
+                <TextField
+                  id="inputBusqueda"
+                  label="Buscar en tabla"
+                  variant="outlined"
+                  placeholder="QAZWSX/2018"
+                  value={this.state.filtroTextoTabla}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Icon>search</Icon>
+                      </InputAdornment>
+                    )
+                  }}
+                  onChange={this.onFiltroTextoChange}
+                />
 
-              {/* Boton buscar por usuario */}
-              {this.state.usuarioBusqueda === undefined && (
-                <IconButton
-                  // color="primary"
-                  onClick={this.mostrarDialogoSelectorUsuarioParaBusqueda}
-                  className={classNames(classes.botonBusquedaPorUsuario, this.state.mostrarFiltros == false && "visible")}
-                >
-                  <Icon>search</Icon>
-                </IconButton>
-              )}
-
-              {/* Filtros */}
-              <Button
-                // color="primary"
-                variant="outlined"
-                onClick={this.onBotonFiltrosClick}
-                className={classNames(classes.botonFiltro, this.state.mostrarFiltros == false && "visible")}
-              >
-                <Icon style={{ marginRight: "8px" }}>{"filter_list"}</Icon>
-                Filtros
-              </Button>
+                {/* Filtros */}
+                <div className={classNames(classes.contenedorHide, this.state.mostrarFiltros == false && "visible")}>
+                  <Button
+                    style={{ marginLeft: 16 }}
+                    // color="primary"
+                    variant="outlined"
+                    onClick={this.onBotonFiltrosClick}
+                  >
+                    <Icon style={{ marginRight: "8px" }}>{"filter_list"}</Icon>
+                    Filtros
+                  </Button>
+                </div>
+              </div>
             </div>
             {this.renderTabla()}
           </div>
@@ -823,9 +813,7 @@ class ConsultaTurnos extends React.Component {
     );
   }
 
-  renderTabla() {
-    const { classes } = this.props;
-
+  filtrar = () => {
     let cantidadDeEstadosCheckeados = 0;
     for (let filtroEstado in this.state.filtroEstados) {
       if (this.state.filtroEstados[filtroEstado] === true) {
@@ -838,9 +826,19 @@ class ConsultaTurnos extends React.Component {
       let cumpleDia =
         this.state.diaSeleccionado == undefined || DateUtils.esMismoDia(this.state.diaSeleccionado, DateUtils.toDateTime(item.fecha));
       let cumpleProtegidos = this.state.filtroProtegidos == undefined || item.protegido == this.state.filtroProtegidos;
-      return cumpleEstado && cumpleDia && cumpleProtegidos;
+      let cumpleTexto =
+        this.state.filtroTextoTabla == "" || item.codigo.toLowerCase().indexOf(this.state.filtroTextoTabla.toLowerCase()) != -1;
+      return cumpleEstado && cumpleDia && cumpleProtegidos && cumpleTexto;
       // return true;
     });
+
+    this.setState({ dataFiltrada: dataFiltrada });
+  };
+
+  renderTabla() {
+    const { classes } = this.props;
+    let { dataFiltrada } = this.state;
+    dataFiltrada = dataFiltrada || [];
 
     return (
       <MiTabla
@@ -852,12 +850,10 @@ class ConsultaTurnos extends React.Component {
           { id: "codigo", label: "Codigo", orderBy: this.columnaCodigoOrderBy },
           { id: "fecha", label: "Fecha", orderBy: this.columnaFechaOrderBy },
           { id: "estadoNombre", label: "Estado", orderBy: this.columnaEstadoOrderBy },
-          { id: "botones", label: "Acciones" },
+          { id: "botones", label: "" },
           { id: "data", hidden: true }
         ]}
         rows={dataFiltrada.map(item => {
-          let fecha = DateUtils.toDate(item.fecha);
-
           return {
             codigo: this.columnaCodigoRender(item),
             fecha: this.columnaFechaRender(item),
@@ -977,8 +973,10 @@ class ConsultaTurnos extends React.Component {
 
     return (
       <div className={classNames(classes.contenedorFiltros, this.state.mostrarFiltros && "visible")}>
-        <div className={classes.contenedorTitulo}>
-          <Typography variant="title">Filtros</Typography>
+        <div className={classes.contenedorTituloFiltros}>
+          <Typography variant="title" className="titulo">
+            Filtros
+          </Typography>
           <IconButton onClick={this.onBotonFiltrosClick}>
             <Icon>clear</Icon>
           </IconButton>
@@ -1032,6 +1030,18 @@ class ConsultaTurnos extends React.Component {
             }
             label={"Protegidos"}
           />
+
+          {!this.state.usuarioBusqueda && (
+            <Button variant="outlined" color="primary" onClick={this.mostrarDialogoSelectorUsuarioParaBusqueda}>
+              Filtrar por usuario
+            </Button>
+          )}
+
+          {this.state.usuarioBusqueda && (
+            <Button variant="outlined" color="primary" onClick={this.cancelarBusquedaPorUsuario}>
+              Quitar filtro por usuario
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -1082,10 +1092,7 @@ class CalendarioMes_Dia extends React.PureComponent {
     let fecha = this.props.props.date;
     let hoy = new Date();
     const esHoy = fecha.getDate() == hoy.getDate() && fecha.getMonth() == hoy.getMonth() && fecha.getFullYear() == hoy.getFullYear();
-
     const seleccionado = this.props.seleccionado && this.props.seleccionado == true;
-    // const conTurnos = this.props.conTurnos && this.props.conTurnos == true;
-    // const deshabilitado = this.props.deshabilitado && this.props.deshabilitado == true;
 
     return (
       <div
@@ -1107,6 +1114,75 @@ class CalendarioMes_Dia extends React.PureComponent {
 
         <label>{this.props.props.label}</label>
       </div>
+    );
+  }
+}
+
+class MiCalendario extends React.PureComponent {
+  render() {
+    const { estados, fechaCalendario, classes, diaSeleccionado, data, usuarioBusqueda } = this.props;
+
+    return (
+      <BigCalendar
+        view="month"
+        onView={this.onView}
+        onNavigate={this.onView}
+        date={fechaCalendario}
+        className={classNames(classes.calendario)}
+        views={{ month: true }}
+        culture="es"
+        localizer={localizer}
+        onDrillDown={this.onDiaClick}
+        events={[]}
+        startAccessor="start"
+        endAccessor="end"
+        components={{
+          month: {
+            toolbar: props => {
+              return (
+                <CalendarioMes_Encabezado
+                  props={props}
+                  classes={classes}
+                  onBotonMesAnteriorClick={this.props.onBotonMesAnteriorClick}
+                  onBotonMesSiguienteClick={this.props.onBotonMesSiguienteClick}
+                />
+              );
+            },
+            dateHeader: props => {
+              let diaCalendario = props.date;
+              let seleccionado = diaSeleccionado && DateUtils.esMismoDia(diaSeleccionado, diaCalendario);
+
+              let indicadores = [];
+
+              if (usuarioBusqueda) {
+                seleccionado = false;
+                indicadores = [];
+              } else {
+                _.forEach(estados, estado => {
+                  let conTurnosEnEstado = _.find(data, item => {
+                    let fechaTurno = DateUtils.toDateTime(item.fecha);
+                    let mismoDia = DateUtils.esMismoDia(fechaTurno, diaCalendario);
+                    return item.estadoKeyValue == estado.keyValue && mismoDia == true;
+                  });
+                  if (conTurnosEnEstado) indicadores.push(conTurnosEnEstado.estadoColor);
+                });
+              }
+
+              return (
+                <CalendarioMes_Dia
+                  deshabilitado={false}
+                  conTurnos={false}
+                  classes={classes}
+                  seleccionado={seleccionado}
+                  indicadores={indicadores}
+                  onClick={this.props.onDiaClick}
+                  props={props}
+                />
+              );
+            }
+          }
+        }}
+      />
     );
   }
 }

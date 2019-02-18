@@ -141,6 +141,32 @@ const metodos = {
           reject("Error procesando la solicitud");
         });
     });
+  },
+  getRol: idEntidad => {
+    const url = window.Config.WS_TURNERO + "/v1/Usuario/Permiso";
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--IdEntidad": idEntidad,
+          "--Token": localStorage.getItem("token")
+        }
+      })
+        .then(data => data.json())
+        .then(data => {
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
   }
 };
 

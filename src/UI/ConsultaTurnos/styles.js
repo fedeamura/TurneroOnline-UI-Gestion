@@ -3,6 +3,35 @@ import yellow from "@material-ui/core/colors/yellow";
 
 const styles = theme => {
   return {
+    contenedorInfoTurnero: {
+      display: "flex",
+      alignItems: "flex-start",
+      opacity: 0,
+      transition: "all 0.3s",
+      marginBottom: "16px",
+      "& .imagen": {
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+        // borderRadius: theme.spacing.unit
+      },
+      "&.visible": {
+        opacity: 1
+      },
+      "& .textos": {
+        flex: 1,
+        fontSize: 10
+      }
+    },
+    imagenTurnero: {
+      marginRight: theme.spacing.unit * 2
+    },
+    contenedorCalendario: {
+      opacity: 0,
+      transition: "all 0.3s",
+      "&.visible": {
+        opacity: 1
+      }
+    },
     calendario: {
       height: "350px"
     },
@@ -23,11 +52,7 @@ const styles = theme => {
       backgroundColor: red["500"],
       borderRadius: "16px",
       boxShadow: "0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)",
-      // marginBottom: "0px !important",
-      "& *": {
-        fontColor: "white !important",
-        color: "white !important"
-      }
+      marginBottom: "16px !important"
     },
     card: {
       opacity: 0,
@@ -47,9 +72,30 @@ const styles = theme => {
     },
     contenedorTitulo: {
       display: "flex",
+      flexDirection: "column",
+      padding: theme.spacing.unit * 2,
+      [theme.breakpoints.up("lg")]: {
+        flexDirection: "row"
+      },
+      "& .titulo": {
+        flex: 1
+      },
+      "& .filtros": {
+        alignItems: "center",
+        justifyContent: "flex-end",
+        marginTop: theme.spacing.unit * 2,
+        [theme.breakpoints.up("lg")]: {
+          marginTop: 0
+        },
+        display: "flex"
+      }
+    },
+    contenedorTituloFiltros: {
+      padding: theme.spacing.unit * 2,
+      display: "flex",
       alignItems: "center",
-      padding: "16px",
-      "& h2": {
+      flexDirection: "row",
+      "& .titulo": {
         flex: 1
       }
     },
@@ -82,15 +128,21 @@ const styles = theme => {
         padding: "16px"
       }
     },
-    botonFiltro: {
+    contenedorHide: {
       opacity: 0,
       pointerEvents: "none",
-      transition: "all 0.3s",
+      maxWidth: "0rem",
+      minWidth: 0,
+      overflow: "hidden",
+      transition: "opacity 0.3s, max-width 0.3s 0.3s, padding 0.3s 0.3s",
       "&.visible": {
         opacity: 1,
+        maxWidth: "10rem",
+        transition: "opacity 0.3s 0.3s, max-width 0.3s, padding 0.3s",
         pointerEvents: "auto"
       }
     },
+    botonFiltro: {},
     botonBusquedaPorUsuario: {
       marginRight: "16px",
       opacity: 0,
@@ -172,6 +224,14 @@ const styles = theme => {
     },
     cardFiltrosActivos: {
       marginTop: "16px"
+    },
+    linkInteres: {
+      cursor: "pointer",
+      textDecoration: "underline",
+      color: theme.palette.primary.main,
+      "&:hover": {
+        fontWeight: "bold"
+      }
     }
   };
 };

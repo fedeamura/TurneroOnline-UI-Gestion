@@ -1,10 +1,10 @@
 const DEPLOY = 1;
 const TEST = 2;
 const LOCAL = 3;
-const ENTORNO = LOCAL;
+const ENTORNO = DEPLOY;
 
 //WS Turnero
-const URL_WS_TURNERO_LOCAL = "http://localhost:30001";
+const URL_WS_TURNERO_LOCAL = "http://localhost:30002";
 const URL_WS_TURNERO_TEST = "https://srv-dev04.cordoba.local/WSTurneroOnline";
 const URL_WS_TURNERO_DEPLOY = "https://servicios2.cordoba.gov.ar/WSTurneroOnline_Bridge";
 let URL_WS_TURNERO = URL_WS_TURNERO_DEPLOY;
@@ -39,6 +39,8 @@ switch (ENTORNO) {
     break;
 }
 
+// URL_LOGIN = URL_LOGIN_LOCAL;
+
 var Config = {
   BASE_URL: "/TurneroOnlineGestion",
   WS_TURNERO: URL_WS_TURNERO,
@@ -50,7 +52,10 @@ var Config = {
   IDENTIFICADOR_FOTO_DEFAULT_FEMALE:
     "f_zq38nzky73iwxm6fz4m812vx68ggr28xgokqfwx7zf9ws7rd6_s7mn985gcqtehf6vpicq_chqiv3_e9rdlsjal4pmw_uhnu9318riap_p07eoe5cd_q4z65kw304ataczwaihsic6t4lo0bh18qi81k86x6qlv_7z5q2ew6w1n8gbu772sdcd3e8mcnuw31ku8wtkkd",
   URL_MI_PERFIL: "https://servicios2.cordoba.gov.ar/VecinoVirtual/Utils/MiPerfil",
-  NOMBRE_SISTEMA: "Turnero Online"
+  NOMBRE_SISTEMA: "Turnero Online",
+  URL_NUEVO_USUARIO: "https://servicios2.cordoba.gov.ar/VecinoVirtual/Login/#/NuevoUsuario/TurneroOnline",
+  GOOGLE_STATIC_MAP_KEY: "AIzaSyCKFQtmXhN0YwgjLDQhuwZpwrWZjH5xJcY",
+
 };
 
 module.exports = Config;

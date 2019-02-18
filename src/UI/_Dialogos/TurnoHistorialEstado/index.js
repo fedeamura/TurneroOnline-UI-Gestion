@@ -10,40 +10,24 @@ import { withRouter } from "react-router-dom";
 
 //REDUX
 import { connect } from "react-redux";
-import { push, replace } from "connected-react-router";
+import { push } from "connected-react-router";
 import { mostrarAlertaVerde, mostrarAlertaNaranja } from "@Redux/Actions/alerta";
 
 //Compontes
 import _ from "lodash";
-import { IconButton, Typography, Grid, FormControlLabel, Checkbox, Button, Icon, CircularProgress, DialogTitle } from "@material-ui/core";
+import { Button, CircularProgress, DialogTitle } from "@material-ui/core";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import withMobileDialog from "@material-ui/core/withMobileDialog";
-import IconAssignmentLateOutlined from "@material-ui/icons/AssignmentLateOutlined";
-import IconAssignmentIndOutlined from "@material-ui/icons/AssignmentIndOutlined";
-import IconCancelOutlined from "@material-ui/icons/CancelOutlined";
-import IconCheckCircleOutlined from "@material-ui/icons/CheckCircleOutlined";
-import IconSwapVertOutlined from "@material-ui/icons/SwapVertOutlined";
-import IconSwapVerticalCircle from "@material-ui/icons/SwapVerticalCircleOutlined";
 
 //Mis Componentes
-import UsuarioDetalle from "@Componentes/MiUsuarioDetalle";
-import DialogoInput from "@UI/_Dialogos/Input";
-import DialogoConfirmacion from "@UI/_Dialogos/Confirmacion";
-import DialogoSelectorUsuario from "@UI/_Dialogos/SelectorUsuario";
 import MiBaner from "@Componentes/MiBaner";
 import HistorialEstado from "./HistorialEstado";
 
 //Rules
 import Rules_Turno from "@Rules/Rules_Turno";
-
-const ESTADO_VENCIDO_KEY_VALUE = -1;
-const ESTADO_DISPONIBLE_KEY_VALUE = 1;
-const ESTADO_RESERVADO_KEY_VALUE = 2;
-const ESTADO_COMPLETADO_KEY_VALUE = 3;
-const ESTADO_CANCELADO_KEY_VALUE = 4;
 
 const mapStateToProps = state => {
   return {
@@ -111,7 +95,7 @@ class DialogoTurnoHistorial extends React.Component {
   onBaneErrorClose = () => {
     this.setState({ mostrarError: false });
   };
-  
+
   render() {
     const { classes, usuario, fullScreen } = this.props;
 
