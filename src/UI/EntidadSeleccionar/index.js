@@ -11,7 +11,7 @@ import { withRouter } from "react-router-dom";
 //REDUX
 import { connect } from "react-redux";
 import { goBack, push } from "connected-react-router";
-import { seleccionarEntidad } from "@Redux/Actions/usuario";
+import { seleccionarEntidad, setRoles } from "@Redux/Actions/usuario";
 
 //Componentes
 import { Typography, Button } from "@material-ui/core";
@@ -19,16 +19,25 @@ import _ from "lodash";
 
 //Mis componentes
 import MiPagina from "../_MiPagina";
-import MiContent from "@Componentes/MiContent";
 import MiCard from "@Componentes/MiCard";
+
+import Rules_Usuario from "@Rules/Rules_Usuario";
+
+const ID_ROL_OPERADOR = 2156;
+const ID_ROL_SUPERVISOR = 2157;
+const ID_ROL_ADMINISTRADOR = 2158;
 
 const mapStateToProps = state => {
   return {
+    token: state.Usuario.token,
     roles: state.Usuario.roles
   };
 };
 
 const mapDispatchToProps = dispatch => ({
+  setRoles: data => {
+    dispatch(setRoles(data));
+  },
   goBack: () => {
     dispatch(goBack());
   },
@@ -47,6 +56,24 @@ class EntidadSeleccionar extends React.Component {
     this.state = {};
   }
 
+  componentDidMount() {
+    Rules_Usuario.getRolesDisponibles()
+      .then(data => {
+        data = _.orderBy(data, item => {
+          return item.entidadNombre;
+        });
+
+        data.forEach(item => {
+          item.tramites = _.orderBy(item.tramites, tramite => {
+            return tramite.nombre;
+          });
+        });
+
+        this.props.setRoles(data);
+      })
+      .catch(error => {});
+  }
+
   onBotonTurneroClick = e => {
     let idEntidad = e.currentTarget.attributes.identidad.value;
     let idTurnero = e.currentTarget.attributes.idturnero.value;
@@ -54,7 +81,7 @@ class EntidadSeleccionar extends React.Component {
     this.props.redirigir("/ConsultaTurnos/" + idTurnero);
   };
 
-  onBotonGestionarClick = (e) => {
+  onBotonGestionarClick = e => {
     let idEntidad = e.currentTarget.attributes["data-id"].value;
     this.props.seleccionarEntidad(idEntidad);
     this.props.redirigir("/Entidad/" + idEntidad);
@@ -80,9 +107,11 @@ class EntidadSeleccionar extends React.Component {
                     <Typography style={{ flex: 1 }} variant="title">
                       {rol.entidadNombre}
                     </Typography>
-                    <Button variant="outlined" data-id={rol.entidadId} onClick={this.onBotonGestionarClick}>
-                      Gestionar
-                    </Button>
+                    {(rol.rolId == ID_ROL_SUPERVISOR || rol.rolId == ID_ROL_ADMINISTRADOR) && (
+                      <Button variant="outlined" data-id={rol.entidadId} onClick={this.onBotonGestionarClick}>
+                        Gestionar
+                      </Button>
+                    )}
                   </div>
 
                   <Typography variant="subheading">Rol: {rol.rolNombre}</Typography>

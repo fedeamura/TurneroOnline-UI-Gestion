@@ -33,7 +33,7 @@ import EntidadSeleccionar from "@UI/EntidadSeleccionar";
 import EntidadDetalle from "@UI/EntidadDetalle";
 import TramiteDetalle from "@UI/TramiteDetalle";
 import ConsultaTurnos from "@UI/ConsultaTurnos";
-import TurneroNuevoConfigurar from "@UI/TurneroNuevoConfigurar";
+import TurneroProgramacion from "@UI/TurneroProgramacion";
 import TurneroFicha from "@UI/TurneroFicha";
 import SinPermiso from "@UI/SinPermiso";
 
@@ -147,29 +147,25 @@ class App extends React.Component {
             roles: datos.roles
           });
 
-          if (datos.roles.length == 1) {
-            this.props.seleccionarEntidad(datos.roles[0].entidadId);
+          let idEntidad = localStorage.getItem("idEntidad");
+          if (idEntidad == undefined || idEntidad == null || idEntidad == "undefined") {
+            this.props.redireccionar("/SeleccionarEntidad");
           } else {
-            let idEntidad = localStorage.getItem("idEntidad");
-            if (idEntidad == undefined || idEntidad == null || idEntidad == "undefined") {
+            let entidadValida =
+              _.filter(datos.roles, item => {
+                return item.entidadId == idEntidad;
+              }).length != 0;
+            if (!entidadValida) {
+              this.props.seleccionarEntidad(undefined);
               this.props.redireccionar("/SeleccionarEntidad");
             } else {
-              let entidadValida =
-                _.filter(datos.roles, item => {
-                  return item.entidadId == idEntidad;
-                }).length != 0;
-              if (!entidadValida) {
-                this.props.seleccionarEntidad(undefined);
-                this.props.redireccionar("/SeleccionarEntidad");
+              this.props.seleccionarEntidad(idEntidad);
+              if (search) {
+                let url = search.get("url") || "/";
+                this.props.redireccionar(url);
               } else {
-                this.props.seleccionarEntidad(idEntidad);
-                if (search) {
-                  let url = search.get("url") || "/";
-                  this.props.redireccionar(url);
-                } else {
-                  if (this.props.location.pathname == "/") {
-                    this.props.redireccionar("/SeleccionarEntidad");
-                  }
+                if (this.props.location.pathname == "/") {
+                  this.props.redireccionar("/SeleccionarEntidad");
                 }
               }
             }
@@ -253,7 +249,7 @@ class App extends React.Component {
           <Route exact path={`${base}/SeleccionarEntidad`} component={EntidadSeleccionar} />
           <Route exact path={`${base}/Entidad/:id`} component={login ? EntidadDetalle : null} />
           <Route exact path={`${base}/Tramite/:idEntidad/:idTramite`} component={login ? TramiteDetalle : null} />
-          <Route exact path={`${base}/TurneroBorrador/:id`} component={login ? TurneroNuevoConfigurar : null} />
+          <Route exact path={`${base}/TurneroProgramacion/:id`} component={login ? TurneroProgramacion : null} />
           <Route exact path={`${base}/TurneroFicha/:id`} component={login ? TurneroFicha : null} />
 
           <Route component={login ? Pagina404 : null} />

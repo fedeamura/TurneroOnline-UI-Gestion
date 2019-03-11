@@ -204,7 +204,7 @@ class DialogoTurnoNuevo extends React.Component {
         cargando: true,
         errorVisible: false,
         turnosColision: undefined,
-        turnosColisionDetalleVisible:false
+        turnosColisionDetalleVisible: false
       },
       () => {
         Rules_Turno.getColisionesNuevoTurno({
@@ -291,7 +291,7 @@ class DialogoTurnoNuevo extends React.Component {
           .then(turno => {
             this.setState({ cargando: false }, () => {
               this.onClose();
-              this.props.mostrarAlertaVerde({texto:'Turno registrado correctamente'});
+              this.props.mostrarAlertaVerde({ texto: "Turno registrado correctamente" });
               this.props.callback && this.props.callback(turno);
             });
           })
@@ -322,20 +322,21 @@ class DialogoTurnoNuevo extends React.Component {
     return (
       <React.Fragment>
         <Dialog fullScreen={fullScreen} open={this.props.visible} onClose={this.onClose} aria-labelledby="responsive-dialog-title">
+          <MiBaner
+            visible={this.state.errorVisible}
+            mensaje={this.state.error}
+            modo="error"
+            botonVisible={true}
+            onBotonClick={this.onBaneErrorClose}
+            className={classes.contenedorError}
+          />
+
           <DialogTitle>Nuevo turno</DialogTitle>
           <DialogContent style={{ paddingLeft: 0, paddingRight: 0 }}>
             <MiBaner
-              visible={this.state.errorVisible}
-              mensaje={this.state.error}
-              modo="error"
-              mostrarBoton={true}
-              onBotonClick={this.onBaneErrorClose}
-              className={classes.contenedorError}
-            />
-            <MiBaner
               visible={this.state.turnosColision && this.state.turnosColision.length != 0}
               botonIcono={<Icon>{this.state.turnosColisionDetalleVisible ? "keyboard_arrow_up" : "keyboard_arrow_down"}</Icon>}
-              mostrarBoton={true}
+              botonVisible={true}
               onBotonClick={this.onBotonTurnosColisionClick}
               mensaje={
                 this.state.turnosColision &&
@@ -373,12 +374,14 @@ class DialogoTurnoNuevo extends React.Component {
                   <InlineDatePicker
                     fullWidth
                     label="Fecha"
+                    keyboard
+                    variant="outlined"
                     format="dd/MM/yyyy"
                     placeholder="10/10/2018"
                     mask={value => (value ? [/\d/, /\d/, "/", /\d/, /\d/, "/", /\d/, /\d/, /\d/, /\d/] : [])}
                     disableOpenOnEnter
                     animateYearScrolling={false}
-                    value={fecha}
+                    value={fecha || null}
                     maxDateMessage="Fecha inválida"
                     minDateMessage="Fecha inválida"
                     invalidDateMessage="Fecha inválida"
@@ -391,21 +394,27 @@ class DialogoTurnoNuevo extends React.Component {
                 <Grid item xs={6}>
                   <InlineTimePicker
                     fullWidth
+                    keyboard
                     label="Hora Inicio"
+                    format="HH:mm"
                     value={hora}
                     ampm={false}
+                    variant="outlined"
                     onChange={this.onHora}
-                    mask={[/\d/, /\d/, ":", /\d/, /\d/, " ", /a|p/i, "M"]}
+                    mask={value => (value ? [/\d/, /\d/, ":", /\d/, /\d/] : [])}
                   />
                 </Grid>
                 <Grid item xs={6}>
                   <InlineTimePicker
                     fullWidth
+                    keyboard
                     label="Hora Fin"
+                    format="HH:mm"
+                    variant="outlined"
                     value={horaFin}
                     ampm={false}
                     onChange={this.onHoraFin}
-                    mask={[/\d/, /\d/, ":", /\d/, /\d/, " ", /a|p/i, "M"]}
+                    mask={value => (value ? [/\d/, /\d/, ":", /\d/, /\d/] : [])}
                   />
                 </Grid>
 

@@ -11,7 +11,7 @@ import IconButton from "@material-ui/core/IconButton";
 
 class MiItemDetalle extends React.PureComponent {
   render() {
-    let { classes, icono, titulo, contenido, mostrarBoton, botonIcono } = this.props;
+    let { classes, icono, titulo, contenido, botonVisible, botonIcono } = this.props;
 
     return (
       <React.Fragment>
@@ -22,8 +22,8 @@ class MiItemDetalle extends React.PureComponent {
             {titulo && <Typography variant="body2">{titulo}</Typography>}
             {contenido && <Typography variant="body1">{contenido}</Typography>}
           </div>
-          {mostrarBoton && <div className={classes.separadorIcono} />}
-          {mostrarBoton === true && <IconButton onClick={this.props.onBotonClick}>{botonIcono}</IconButton>}
+          {botonVisible && <div className={classes.separadorIcono} />}
+          {botonVisible === true && <IconButton onClick={this.props.onBotonClick}>{botonIcono}</IconButton>}
         </div>
       </React.Fragment>
     );

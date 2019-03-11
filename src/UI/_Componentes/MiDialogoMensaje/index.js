@@ -50,7 +50,7 @@ class DialogoMensaje extends React.PureComponent {
           <MiBaner
             visible={this.props.banerVisible || false}
             mensaje={this.props.banerMensaje || ""}
-            mostrarBoton={this.props.banerBotonVisible || false}
+            botonVisible={this.props.banerBotonVisible || false}
             modo="error"
             onBotonClick={this.props.onBanerBotonClick}
           />

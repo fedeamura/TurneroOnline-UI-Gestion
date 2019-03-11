@@ -91,7 +91,8 @@ const metodos = {
         });
     });
   },
-  getRolesDisponibles: token => {
+  getRolesDisponibles: (token) => {
+    token = token || localStorage.getItem("token");
     const url = window.Config.WS_TURNERO + "/v1/Usuario/RolesDisponibles";
     return new Promise((resolve, reject) => {
       fetch(url, {
@@ -125,6 +126,31 @@ const metodos = {
           Accept: "application/json",
           "Content-Type": "application/json",
           "--IdEntidad": comando.idEntidad,
+          "--Token": localStorage.getItem("token")
+        }
+      })
+        .then(data => data.json())
+        .then(data => {
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  getDetalle: id => {
+    const url = window.Config.WS_TURNERO + "/v1/Usuario/Detalle?id=" + id;
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
           "--Token": localStorage.getItem("token")
         }
       })

@@ -13,7 +13,7 @@ import { withRouter } from "react-router-dom";
 //REDUX
 import { connect } from "react-redux";
 import { push } from "connected-react-router";
-import { mostrarAlertaVerde, mostrarAlertaNaranja } from "@Redux/Actions/alerta";
+import { mostrarAlertaVerde, mostrarAlertaNaranja, mostrarAlertaRoja } from "@Redux/Actions/alerta";
 
 //Compontes
 import _ from "lodash";
@@ -30,6 +30,11 @@ import IconKeyboardArrowLeftOutlined from "@material-ui/icons/KeyboardArrowLeftO
 import IconKeyboardArrowRightOutlined from "@material-ui/icons/KeyboardArrowRightOutlined";
 import IconLockOutlined from "@material-ui/icons/LockOutlined";
 import IconLockOpenOutlined from "@material-ui/icons/LockOpenOutlined";
+import IconSearchOutlined from "@material-ui/icons/SearchOutlined";
+import IconClearOutlined from "@material-ui/icons/ClearOutlined";
+import IconFilterListOutlined from "@material-ui/icons/FilterListOutlined";
+import IconSaveAltOutlined from "@material-ui/icons/SaveAltOutlined";
+import memoizeOne from "memoize-one";
 
 //Mis Componentes
 import _MiPagina from "../_MiPagina";
@@ -41,8 +46,11 @@ import DialogoTurnoDetalle from "@UI/_Dialogos/TurnoDetalle";
 import DialogoSelectorUsuario from "@UI/_Dialogos/SelectorUsuario";
 import DialogoBusquedaPorCodigo from "@UI/_Dialogos/TurnoBusquedaPorCodigo";
 import DialogoTurnoNuevo from "../_Dialogos/TurnoNuevo";
-
+import DialogoMensaje from "@Componentes/MiDialogoMensaje";
+import DialogoUsuarioDetalle from "../_Dialogos/UsuarioDetalle";
 import DateUtils from "@Componentes/Utils/Date";
+import CordobaFilesUtils from "@Componentes/Utils/CordobaFiles";
+import StringUtils from "@Componentes/Utils/String";
 
 //Recursos
 import ToolbarLogo from "@Resources/imagenes/toolbar_logo.png";
@@ -65,6 +73,10 @@ const ESTADO_RESERVADO_KEY_VALUE = 2;
 const ESTADO_COMPLETADO_KEY_VALUE = 3;
 const ESTADO_CANCELADO_KEY_VALUE = 4;
 
+const ID_ROL_OPERADOR = 2156;
+const ID_ROL_SUPERVISOR = 2157;
+const ID_ROL_ADMINISTRADOR = 2158;
+
 const mapStateToProps = state => {
   return {
     usuario: state.Usuario.usuario,
@@ -81,6 +93,9 @@ const mapDispatchToProps = dispatch => ({
   },
   mostrarAlertaNaranja: comando => {
     dispatch(mostrarAlertaNaranja(comando));
+  },
+  mostrarAlertaRoja: comando => {
+    dispatch(mostrarAlertaRoja(comando));
   }
 });
 
@@ -166,9 +181,7 @@ class ConsultaTurnos extends React.Component {
             item.fechaDate = DateUtils.toDateTime(item.fecha);
           });
 
-          this.setState({ data: turnos, cardVisible: true }, () => {
-            this.filtrar();
-          });
+          this.setState({ data: turnos, cardVisible: true });
         })
         .catch(error => {
           this.setState({ error: error, mostrarError: true });
@@ -200,18 +213,13 @@ class ConsultaTurnos extends React.Component {
               item.fechaDate = DateUtils.toDateTime(item.fecha);
             });
 
-            this.setState(
-              {
-                usuarioBusqueda: usuario,
-                cargando: false,
-                data: data,
-                filtroEstados: filtroEstados,
-                filtroProtegidos: undefined
-              },
-              () => {
-                this.filtrar();
-              }
-            );
+            this.setState({
+              usuarioBusqueda: usuario,
+              cargando: false,
+              data: data,
+              filtroEstados: filtroEstados,
+              filtroProtegidos: undefined
+            });
           })
           .catch(error => {
             this.setState({ mostrarError: true, error: error });
@@ -285,10 +293,9 @@ class ConsultaTurnos extends React.Component {
 
   handleCheckboxEstadoChange = e => {
     let filtroEstados = this.state.filtroEstados;
+    filtroEstados = { ...filtroEstados };
     filtroEstados[e.target.name] = e.target.checked;
-    this.setState({ filtroEstados: filtroEstados }, () => {
-      this.filtrar();
-    });
+    this.setState({ filtroEstados: filtroEstados });
   };
 
   handleCheckboxFiltroProtegidoChange = e => {
@@ -296,9 +303,7 @@ class ConsultaTurnos extends React.Component {
       this.setState({ filtroProtegidos: undefined });
       return;
     }
-    this.setState({ filtroProtegidos: e.target.checked }, () => {
-      this.filtrar();
-    });
+    this.setState({ filtroProtegidos: e.target.checked });
   };
 
   onDiaClick = dia => {
@@ -318,12 +323,14 @@ class ConsultaTurnos extends React.Component {
     }
 
     let { filtroEstados, estados } = this.state;
+    filtroEstados = {
+      ...filtroEstados
+    };
+
     _.forEach(estados, estado => {
       filtroEstados["" + estado.keyValue] = true;
     });
-    this.setState({ diaSeleccionado: dia, filtroEstados }, () => {
-      this.filtrar();
-    });
+    this.setState({ diaSeleccionado: dia, filtroEstados });
   };
 
   orderEstado = (a, b) => {
@@ -389,15 +396,24 @@ class ConsultaTurnos extends React.Component {
   };
 
   cancelarBusquedaPorUsuario = () => {
-    let { filtroEstados } = this.state;
-    filtroEstados[ESTADO_VENCIDO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_DISPONIBLE_KEY_VALUE] = true;
-    filtroEstados[ESTADO_CANCELADO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
-    this.setState({ usuarioBusqueda: undefined, filtroEstados: filtroEstados, filtroProtegidos: undefined, filtroTextoTabla: "" }, () => {
-      this.buscar();
-    });
+    this.setState(
+      {
+        usuarioBusqueda: undefined,
+        filtroEstados: {
+          ...this.state.filtroEstados,
+          [ESTADO_VENCIDO_KEY_VALUE]: true,
+          [ESTADO_DISPONIBLE_KEY_VALUE]: true,
+          [ESTADO_CANCELADO_KEY_VALUE]: true,
+          [ESTADO_RESERVADO_KEY_VALUE]: true,
+          [ESTADO_COMPLETADO_KEY_VALUE]: true
+        },
+        filtroProtegidos: undefined,
+        filtroTextoTabla: ""
+      },
+      () => {
+        this.buscar();
+      }
+    );
   };
 
   onBanerErrorClose = () => {
@@ -435,18 +451,18 @@ class ConsultaTurnos extends React.Component {
   };
 
   onBotonQuitarFiltrosClick = () => {
-    let { filtroEstados } = this.state;
-    filtroEstados[ESTADO_VENCIDO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_DISPONIBLE_KEY_VALUE] = true;
-    filtroEstados[ESTADO_CANCELADO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_RESERVADO_KEY_VALUE] = true;
-    filtroEstados[ESTADO_COMPLETADO_KEY_VALUE] = true;
-
     this.setState(
       {
         filtroProtegidos: undefined,
         usuarioBusqueda: undefined,
-        filtroEstados: filtroEstados,
+        filtroEstados: {
+          ...this.state.filtroEstados,
+          [ESTADO_VENCIDO_KEY_VALUE]: true,
+          [ESTADO_DISPONIBLE_KEY_VALUE]: true,
+          [ESTADO_CANCELADO_KEY_VALUE]: true,
+          [ESTADO_RESERVADO_KEY_VALUE]: true,
+          [ESTADO_COMPLETADO_KEY_VALUE]: true
+        },
         mostrarFiltros: false,
         diaSeleccionado: undefined
       },
@@ -509,6 +525,96 @@ class ConsultaTurnos extends React.Component {
 
   onToolbarTituloClick = () => {
     this.props.redireccionar("/SeleccionarEntidad");
+  };
+
+  getTurnos = memoizeOne((data, filtroEstados, filtroProtegidos, filtroTextoTabla, diaSeleccionado) => {
+    let cantidadDeEstadosCheckeados = 0;
+    for (let filtroEstado in filtroEstados) {
+      if (filtroEstados[filtroEstado] === true) {
+        cantidadDeEstadosCheckeados += 1;
+      }
+    }
+
+    return _.filter(data, item => {
+      let cumpleEstado = cantidadDeEstadosCheckeados === 0 || filtroEstados[item.estadoKeyValue] == true;
+      let cumpleDia = diaSeleccionado == undefined || DateUtils.esMismoDia(diaSeleccionado, DateUtils.toDateTime(item.fecha));
+      let cumpleProtegidos = filtroProtegidos == undefined || item.protegido == filtroProtegidos;
+
+      let nombreUsuario = item.usuarioId == undefined ? "" : (item.usuarioNombre + " " + item.usuarioApellido);
+      let cumpleTexto =
+        filtroTextoTabla == "" ||
+        item.codigo.toLowerCase().indexOf(filtroTextoTabla.toLowerCase()) != -1 ||
+        (item.usuarioId != undefined && nombreUsuario.toLowerCase().indexOf(filtroTextoTabla.toLowerCase()) != -1);
+      return cumpleEstado && cumpleDia && cumpleProtegidos && cumpleTexto;
+      // return true;
+    });
+  });
+
+  //Dialogo exportar
+  onBotonExportarClick = () => {
+    this.mostrarDialogoExportar();
+  };
+
+  mostrarDialogoExportar = () => {
+    var fInicio = this.state.fechaCalendario;
+    var fFin = new Date(this.state.fechaCalendario.getFullYear(), this.state.fechaCalendario.getMonth(), 1, 0, 0, 0, 0);
+    var fFin = new Date(fInicio.getFullYear(), fInicio.getMonth() + 1, 1, 0, 0, 0, 0);
+    let fechaInicio = DateUtils.toDateString(fInicio);
+    let fechaFin = DateUtils.toDateString(fFin);
+
+    let mensaje = `Se exportarán los turnos del periodo ${fechaInicio} a ${fechaFin}`;
+    this.setState({ dialogoExportarVisible: true, dialogoExportarCargando: false, dialogoExportarMensaje: mensaje });
+  };
+
+  onDialogoExportarClose = () => {
+    let cargando = this.state.dialogoExportarCargando;
+    if (cargando == true) return;
+
+    this.setState({ dialogoExportarVisible: false });
+  };
+
+  onDialogoExportarBotonSiClick = () => {
+    var fInicio = this.state.fechaCalendario;
+    var fFin = new Date(this.state.fechaCalendario.getFullYear(), this.state.fechaCalendario.getMonth(), 1, 0, 0, 0, 0);
+    var fFin = new Date(fInicio.getFullYear(), fInicio.getMonth() + 1, 1, 0, 0, 0, 0);
+    let fechaInicio = DateUtils.toDateString(fInicio);
+    let fechaFin = DateUtils.toDateString(fFin);
+
+    this.setState({ dialogoExportarCargando: true }, () => {
+      Rules_Turnero.exportar({
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin,
+        idTurnero: this.state.idTurnero
+      })
+        .then(data => {
+          this.props.mostrarAlertaVerde({ texto: "Su archivo se empezará a descargar en breve" });
+
+          let url = `${window.Config.URL_CORDOBA_FILES}/Archivo/${data}`;
+          const link = document.createElement("a");
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch(error => {
+          this.props.mostrarAlertaRoja({ texto: error });
+        })
+        .finally(() => {
+          this.setState({ dialogoExportarVisible: false });
+        });
+    });
+  };
+
+  onUsuarioClick = e => {
+    let id = e.currentTarget.attributes["data-id"].value;
+    this.setState({
+      dialogoUsuarioDetalleVisible: true,
+      dialogoUsuarioDetalleId: id
+    });
+  };
+
+  onDialogoUsuarioDetalleClose = e => {
+    this.setState({ dialogoUsuarioDetalleVisible: false });
   };
 
   render() {
@@ -575,6 +681,25 @@ class ConsultaTurnos extends React.Component {
             fecha={this.state.diaSeleccionado || new Date()}
             callback={this.onTurnoCreado}
           />
+
+          {/* Dialogo exportar */}
+          <DialogoMensaje
+            mensaje={this.state.dialogoExportarMensaje || ""}
+            visible={this.state.dialogoExportarVisible || false}
+            onClose={this.onDialogoExportarClose}
+            cargando={this.state.dialogoExportarCargando || false}
+            textoSi="Exportar"
+            textoNo="Cancelar"
+            autoCerrarBotonSi={false}
+            onBotonSiClick={this.onDialogoExportarBotonSiClick}
+          />
+
+          {/* Dialogo uisuario detalle */}
+          <DialogoUsuarioDetalle
+            id={this.state.dialogoUsuarioDetalleId}
+            visible={this.state.dialogoUsuarioDetalleVisible || false}
+            onClose={this.onDialogoUsuarioDetalleClose}
+          />
         </_MiPagina>
       </React.Fragment>
     );
@@ -583,7 +708,7 @@ class ConsultaTurnos extends React.Component {
   renderToolbarChildren() {
     return (
       <React.Fragment>
-        <Tooltip title="Buscar por código">
+        <Tooltip title="Buscar por código" disableFocusListener={true}>
           <IconButton onClick={this.mostrarDialogoBuscarPorCodigo}>
             <Icon>search</Icon>
           </IconButton>
@@ -640,9 +765,11 @@ class ConsultaTurnos extends React.Component {
           open={Boolean(this.state.anchorBotonMenuEntidad)}
           onClose={this.onMenuEntidadClose}
         >
-          <MenuItem divider onClick={this.onBotonVerMasInformacionEntidadClick}>
-            Ver más información
-          </MenuItem>
+          {this.props.rol && (this.props.rol.rolId == ID_ROL_ADMINISTRADOR || this.props.rol.rolId == ID_ROL_SUPERVISOR) && (
+            <MenuItem divider onClick={this.onBotonVerMasInformacionEntidadClick}>
+              Gestionar
+            </MenuItem>
+          )}
           <MenuItem onClick={this.onBotonCambiarTurneroClick}>Cambiar turnero</MenuItem>
         </Menu>
       </div>
@@ -686,7 +813,6 @@ class ConsultaTurnos extends React.Component {
           if (estado) {
             filtroEstados.push(estado.nombre);
           }
-          // }
         }
       }
 
@@ -748,9 +874,7 @@ class ConsultaTurnos extends React.Component {
   }
 
   onFiltroTextoChange = e => {
-    this.setState({ filtroTextoTabla: e.currentTarget.value }, () => {
-      this.filtrar();
-    });
+    this.setState({ filtroTextoTabla: e.currentTarget.value });
   };
 
   renderContenedorTabla() {
@@ -775,34 +899,57 @@ class ConsultaTurnos extends React.Component {
               </Typography>
 
               <div className={"filtros"}>
-                <TextField
-                  id="inputBusqueda"
-                  label="Buscar en tabla"
-                  variant="outlined"
-                  placeholder="QAZWSX/2018"
-                  value={this.state.filtroTextoTabla}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Icon>search</Icon>
-                      </InputAdornment>
-                    )
-                  }}
-                  onChange={this.onFiltroTextoChange}
-                />
-
-                {/* Filtros */}
-                <div className={classNames(classes.contenedorHide, this.state.mostrarFiltros == false && "visible")}>
-                  <Button
-                    style={{ marginLeft: 16 }}
-                    // color="primary"
+                <div className={classNames(classes.collapseView, this.state.buscarEnTablaVisible == true && "visible")}>
+                  <TextField
+                    id="inputBusqueda"
                     variant="outlined"
-                    onClick={this.onBotonFiltrosClick}
-                  >
-                    <Icon style={{ marginRight: "8px" }}>{"filter_list"}</Icon>
-                    Filtros
-                  </Button>
+                    placeholder="QAZWSX/2018"
+                    className={classes.inputBusquedaTabla}
+                    value={this.state.filtroTextoTabla}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Icon>search</Icon>
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              this.setState({ buscarEnTablaVisible: false, filtroTextoTabla: "" });
+                            }}
+                          >
+                            <Icon>clear</Icon>
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    onChange={this.onFiltroTextoChange}
+                  />
                 </div>
+
+                <div className={classNames(classes.collapseView, this.state.buscarEnTablaVisible != true && "visible")}>
+                  <Tooltip title="Buscar en tabla" disableFocusListener={true}>
+                    <IconButton
+                      onClick={() => {
+                        this.setState({ buscarEnTablaVisible: true });
+                      }}
+                    >
+                      <IconSearchOutlined />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+
+                <Tooltip title="Exportar tabla" disableFocusListener={true}>
+                  <IconButton onClick={this.onBotonExportarClick}>
+                    <IconSaveAltOutlined />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Filtros" disableFocusListener={true}>
+                  <IconButton onClick={this.onBotonFiltrosClick}>
+                    <IconFilterListOutlined />
+                  </IconButton>
+                </Tooltip>
               </div>
             </div>
             {this.renderTabla()}
@@ -813,33 +960,12 @@ class ConsultaTurnos extends React.Component {
     );
   }
 
-  filtrar = () => {
-    let cantidadDeEstadosCheckeados = 0;
-    for (let filtroEstado in this.state.filtroEstados) {
-      if (this.state.filtroEstados[filtroEstado] === true) {
-        cantidadDeEstadosCheckeados += 1;
-      }
-    }
-
-    let dataFiltrada = _.filter(this.state.data, item => {
-      let cumpleEstado = cantidadDeEstadosCheckeados === 0 || this.state.filtroEstados[item.estadoKeyValue] == true;
-      let cumpleDia =
-        this.state.diaSeleccionado == undefined || DateUtils.esMismoDia(this.state.diaSeleccionado, DateUtils.toDateTime(item.fecha));
-      let cumpleProtegidos = this.state.filtroProtegidos == undefined || item.protegido == this.state.filtroProtegidos;
-      let cumpleTexto =
-        this.state.filtroTextoTabla == "" || item.codigo.toLowerCase().indexOf(this.state.filtroTextoTabla.toLowerCase()) != -1;
-      return cumpleEstado && cumpleDia && cumpleProtegidos && cumpleTexto;
-      // return true;
-    });
-
-    this.setState({ dataFiltrada: dataFiltrada });
-  };
-
   renderTabla() {
     const { classes } = this.props;
-    let { dataFiltrada } = this.state;
-    dataFiltrada = dataFiltrada || [];
+    let { data, filtroEstados, filtroProtegidos, filtroTextoTabla, diaSeleccionado } = this.state;
+    data = data || [];
 
+    var turnos = this.getTurnos(data, filtroEstados, filtroProtegidos, filtroTextoTabla, diaSeleccionado);
     return (
       <MiTabla
         className={classes.tabla}
@@ -850,14 +976,16 @@ class ConsultaTurnos extends React.Component {
           { id: "codigo", label: "Codigo", orderBy: this.columnaCodigoOrderBy },
           { id: "fecha", label: "Fecha", orderBy: this.columnaFechaOrderBy },
           { id: "estadoNombre", label: "Estado", orderBy: this.columnaEstadoOrderBy },
+          { id: "usuario", label: "Usuario", orderBy: this.columnaUsuarioOrderBy },
           { id: "botones", label: "" },
           { id: "data", hidden: true }
         ]}
-        rows={dataFiltrada.map(item => {
+        rows={turnos.map(item => {
           return {
             codigo: this.columnaCodigoRender(item),
             fecha: this.columnaFechaRender(item),
             estadoNombre: this.columnaEstadoRender(item),
+            usuario: this.columnaUsuarioRender(item),
             botones: this.columnaBotonesRender(item),
             data: item
           };
@@ -919,11 +1047,11 @@ class ConsultaTurnos extends React.Component {
     return (
       <div className={classes.colEstado}>
         {data.protegido ? (
-          <Tooltip title={"Turno protegido"}>
+          <Tooltip title={"Turno protegido"} disableFocusListener={true}>
             <IconLockOutlined style={{ color: orange["600"] }} />
           </Tooltip>
         ) : (
-          <Tooltip title={"Turno no protegido"}>
+          <Tooltip title={"Turno no protegido"} disableFocusListener={true}>
             <IconLockOpenOutlined style={{ opacity: 0.4 }} />
           </Tooltip>
         )}
@@ -938,6 +1066,49 @@ class ConsultaTurnos extends React.Component {
   columnaEstadoOrderBy(dataA, dataB) {
     let valorA = dataA.data.estadoNombre;
     let valorB = dataB.data.estadoNombre;
+
+    if (valorA > valorB) {
+      return -1;
+    }
+
+    if (valorA < valorB) {
+      return 1;
+    }
+    return 0;
+  }
+
+  columnaUsuarioRender(data) {
+    const { classes } = this.props;
+
+    if (data.usuarioId == undefined) return null;
+
+    var urlImagen = CordobaFilesUtils.getUrlFotoMiniatura(data.usuarioIdentificadorFotoPersonal, data.usuarioSexoMasculino);
+
+    var nombre = StringUtils.toTitleCase(data.usuarioNombre + " " + data.usuarioApellido);
+    return (
+      <div className={classes.colUsuario}>
+        <div className="imagen" style={{ backgroundImage: `url(${urlImagen})` }} />
+        <Typography data-id={data.usuarioId} className="nombre" variant="body1" onClick={this.onUsuarioClick}>
+          {nombre}
+        </Typography>
+      </div>
+    );
+  }
+
+  columnaUsuarioOrderBy(dataA, dataB) {
+    let valorA;
+    if (dataA.data.usuarioId == undefined) {
+      valorA = "";
+    } else {
+      valorA = dataA.data.usuarioNombre + " " + dataA.data.usuarioApellido;
+    }
+
+    let valorB;
+    if (dataB.data.usuarioId == undefined) {
+      valorB = "";
+    } else {
+      valorB = dataB.data.usuarioNombre + " " + dataB.data.usuarioApellido;
+    }
 
     if (valorA > valorB) {
       return -1;
@@ -978,7 +1149,7 @@ class ConsultaTurnos extends React.Component {
             Filtros
           </Typography>
           <IconButton onClick={this.onBotonFiltrosClick}>
-            <Icon>clear</Icon>
+            <IconClearOutlined />
           </IconButton>
         </div>
 
@@ -1046,11 +1217,6 @@ class ConsultaTurnos extends React.Component {
       </div>
     );
   }
-
-  renderToolbarLogo = () => {
-    const { classes } = this.props;
-    return <div className={classes.logoMuni} style={{ backgroundImage: "url(" + ToolbarLogo + ")" }} />;
-  };
 }
 
 class CalendarioMes_Encabezado extends React.PureComponent {

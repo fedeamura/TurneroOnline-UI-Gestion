@@ -25,13 +25,15 @@ import {
   withMobileDialog,
   Input,
   InputLabel,
-  FormControl
+  FormControl,
+  TextField
 } from "@material-ui/core";
 import IconSearchOutlined from "@material-ui/icons/SearchOutlined";
 import IconPersonOutlined from "@material-ui/icons/PersonOutlined";
 
 //Mis componentes
 import UsuarioDetalle from "@Componentes/MiUsuarioDetalle";
+import MiBaner from "@Componentes/MiBaner";
 
 //Rules
 import Rules_Usuario from "@Rules/Rules_Usuario";
@@ -70,7 +72,7 @@ class DialogoSelectorUsuario extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.visible != this.props.visible && nextProps.visible) {
-      this.setState({ input: "", data: [], mostrarError: false, buscoAlgunaVez: false });
+      this.setState({ input: "", data: [], errorVisible: false, buscoAlgunaVez: false });
     }
   }
 
@@ -96,7 +98,7 @@ class DialogoSelectorUsuario extends React.Component {
       return;
     }
 
-    this.setState({ cargando: true }, () => {
+    this.setState({ cargando: true, errorVisible: false }, () => {
       Rules_Usuario.buscar({
         idEntidad: this.props.rol.entidadId,
         consulta: input
@@ -105,7 +107,7 @@ class DialogoSelectorUsuario extends React.Component {
           this.setState({ buscoAlgunaVez: true, data: data });
         })
         .catch(error => {
-          this.props.mostrarAlertaNaranja({ texto: error });
+          this.setState({ errorVisible: true, errorMensaje: error });
         })
         .finally(() => {
           this.setState({ cargando: false });
@@ -122,6 +124,10 @@ class DialogoSelectorUsuario extends React.Component {
     if (win) win.focus();
   };
 
+  onBanerErrorClose = () => {
+    this.setState({ errorVisible: false });
+  };
+
   render() {
     const { classes, fullScreen } = this.props;
 
@@ -135,22 +141,31 @@ class DialogoSelectorUsuario extends React.Component {
 
     return (
       <React.Fragment>
-        <Dialog fullScreen={fullScreen} open={this.props.visible} onClose={this.onClose} aria-labelledby="responsive-dialog-title">
-          <DialogTitle id="responsive-dialog-title">Buscar usuario</DialogTitle>
+        <Dialog fullScreen={fullScreen} open={this.props.visible} onClose={this.onClose} aria-labelledby="titulo">
+          <MiBaner
+            modo="error"
+            visible={this.state.errorVisible}
+            mensaje={this.state.errorMensaje}
+            onBotonClick={this.onBanerErrorClose}
+            className={classes.contenedorError}
+            botonVisible={true}
+          />
+
+          <DialogTitle id="titulo">Buscar usuario</DialogTitle>
           <DialogContent style={{ padding: 0 }}>
-            <div style={{ padding: 24, paddingTop: 0 }}>
-              <FormControl className={classes.margin} disabled={this.state.cargando}>
-                <InputLabel htmlFor="inputBuscar">Buscar</InputLabel>
-                <Input
-                  autoFocus
-                  id="inputBuscar"
-                  value={this.state.input}
-                  name="input"
-                  onChange={this.onChange}
-                  placeholder="N° de Documento o CUIL"
-                  onKeyPress={this.onKeyPress}
-                />
-              </FormControl>
+            <div style={{ padding: 24, paddingTop: 0, display: "flex" }}>
+              <TextField
+                style={{ flex: 1 }}
+                fullWidth
+                onChange={this.onChange}
+                autoFocus
+                name="input"
+                value={this.state.input}
+                onKeyPress={this.onKeyPress}
+                disabled={this.state.cargando}
+                placeholder="N° de Documento o CUIL"
+                variant="outlined"
+              />
               <Button
                 disabled={this.state.cargando}
                 onClick={this.buscar}

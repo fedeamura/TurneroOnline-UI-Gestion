@@ -29,8 +29,8 @@ class DialogoForm extends React.Component {
 
     this.state = {
       inputs: this.generarInputs(props.inputs),
-      mostrarBaner: false,
-      textoBaner: ""
+      banerVisible: false,
+      banerMensaje: ""
     };
   }
 
@@ -146,7 +146,7 @@ class DialogoForm extends React.Component {
           <MiBaner
             visible={this.props.banerVisible}
             mensaje={this.props.banerMensaje}
-            mostrarBoton={this.props.banerBotonVisible}
+            botonVisible={this.props.banerBotonVisible}
             modo={this.props.banerModo || "error"}
             onBotonClick={this.props.onBanerBotonClick}
           />

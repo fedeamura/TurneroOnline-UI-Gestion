@@ -269,7 +269,7 @@ const metodos = {
     });
   },
   getByFilters: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/Turno/GetByFilters";
+    const url = window.Config.WS_TURNERO + "/v2/Turno/GetByFilters";
     return new Promise((resolve, reject) => {
       fetch(url, {
         method: "PUT",
@@ -574,7 +574,6 @@ const metodos = {
     });
   },
   getColisionesNuevoTurno: comando => {
-    console.log(comando);
     const url = window.Config.WS_TURNERO + "/v1/Turno/ColisionesNuevoTurno";
     return new Promise((resolve, reject) => {
       fetch(url, {
@@ -618,7 +617,6 @@ const metodos = {
     });
   },
   insertar: comando => {
-    console.log(comando);
     const url = window.Config.WS_TURNERO + "/v1/Turno";
     return new Promise((resolve, reject) => {
       fetch(url, {

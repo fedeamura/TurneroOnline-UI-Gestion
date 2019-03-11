@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { USUARIO_LOGIN, USUARIO_CERRAR_SESION, USUARIO_SELECCIONAR_ENTIDAD } from "@Redux/Constants/index";
+import { USUARIO_LOGIN, USUARIO_ROLES,USUARIO_CERRAR_SESION, USUARIO_SELECCIONAR_ENTIDAD } from "@Redux/Constants/index";
 
 const initialState = {
   usuario: undefined,
@@ -14,6 +14,11 @@ const reducer = (state = initialState, action) => {
       localStorage.setItem("token", action.payload.token);
       return { ...state, usuario: action.payload.usuario, token: action.payload.token, roles: action.payload.roles };
     }
+
+    case USUARIO_ROLES: {
+      return { ...state, roles: action.payload };
+    }
+
     case USUARIO_SELECCIONAR_ENTIDAD: {
       if (action.payload == undefined) {
         localStorage.setItem("idEntidad", undefined);

@@ -1,10 +1,12 @@
 const DEPLOY = 1;
 const TEST = 2;
 const LOCAL = 3;
+// const ENTORNO = LOCAL;
 const ENTORNO = DEPLOY;
 
 //WS Turnero
-const URL_WS_TURNERO_LOCAL = "http://localhost:30002";
+const WS_INTRANET = true;
+const URL_WS_TURNERO_LOCAL = WS_INTRANET ? "http://localhost:30002" : "http://localhost:30001";
 const URL_WS_TURNERO_TEST = "https://srv-dev04.cordoba.local/WSTurneroOnline";
 const URL_WS_TURNERO_DEPLOY = "https://servicios2.cordoba.gov.ar/WSTurneroOnline_Bridge";
 let URL_WS_TURNERO = URL_WS_TURNERO_DEPLOY;
@@ -39,6 +41,7 @@ switch (ENTORNO) {
     break;
 }
 
+// URL_WS_TURNERO = URL_WS_TURNERO_LOCAL;
 // URL_LOGIN = URL_LOGIN_LOCAL;
 
 var Config = {
@@ -55,7 +58,7 @@ var Config = {
   NOMBRE_SISTEMA: "Turnero Online",
   URL_NUEVO_USUARIO: "https://servicios2.cordoba.gov.ar/VecinoVirtual/Login/#/NuevoUsuario/TurneroOnline",
   GOOGLE_STATIC_MAP_KEY: "AIzaSyCKFQtmXhN0YwgjLDQhuwZpwrWZjH5xJcY",
-
+  VERSION: 2
 };
 
 module.exports = Config;

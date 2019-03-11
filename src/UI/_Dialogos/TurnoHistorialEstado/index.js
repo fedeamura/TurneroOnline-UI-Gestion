@@ -75,7 +75,6 @@ class DialogoTurnoHistorial extends React.Component {
     this.setState({ cargando: true }, () => {
       Rules_Turno.getHistorialEstado({ id: id, idEntidad: this.props.rol.entidadId })
         .then(data => {
-          console.log(data);
           this.setState({ data: data });
         })
         .catch(error => {

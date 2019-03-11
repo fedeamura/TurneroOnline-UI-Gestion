@@ -124,8 +124,8 @@ class DialogoTurnoBusquedaPorCodigo extends React.Component {
         <DialogoInput
           visible={this.state.visible}
           cargando={this.state.cargando}
-          mostrarBaner={this.state.errorVisible}
-          textoBaner={this.state.error}
+          banerVisible={this.state.errorVisible}
+          banerMensaje={this.state.error}
           titulo="Buscar por código"
           placeholder="QAZWSX/2018"
           label="Código"

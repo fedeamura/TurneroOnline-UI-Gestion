@@ -452,26 +452,6 @@ class EntidadDetalle extends React.Component {
     );
   };
 
-  onTramiteMouseEnter = e => {
-    let id = e.currentTarget.attributes["data-id"].value;
-    this.setState({ ["tramiteEnfocado" + id]: true });
-  };
-
-  onTramiteMouseLeave = e => {
-    let id = e.currentTarget.attributes["data-id"].value;
-    this.setState({ ["tramiteEnfocado" + id]: false });
-  };
-
-  onLinkDeInteresMouseEnter = e => {
-    let id = e.currentTarget.attributes["data-id"].value;
-    this.setState({ ["linkDeInteresEnfocado" + id]: true });
-  };
-
-  onLinkDeInteresMouseLeave = e => {
-    let id = e.currentTarget.attributes["data-id"].value;
-    this.setState({ ["linkDeInteresEnfocado" + id]: false });
-  };
-
   render() {
     const { classes } = this.props;
     const { data } = this.state;
@@ -489,7 +469,7 @@ class EntidadDetalle extends React.Component {
                   modo="error"
                   mensaje={this.state.error}
                   className={classes.contenedorError}
-                  mostrarBoton={true}
+                  botonVisible={true}
                   onBotonClick={this.onErrorClose}
                 />
 
@@ -540,16 +520,8 @@ class EntidadDetalle extends React.Component {
                       {data.tramites && data.tramites.length != 0 && (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           {data.tramites.map((tramite, index) => {
-                            let enfocado = this.state["tramiteEnfocado" + tramite.id] == true;
-
                             return (
-                              <div
-                                key={tramite.id + ""}
-                                data-id={tramite.id}
-                                onMouseEnter={this.onTramiteMouseEnter}
-                                onMouseLeave={this.onTramiteMouseLeave}
-                                className={classNames(classes.contenedorTramite, enfocado && "enfocado")}
-                              >
+                              <div key={tramite.id + ""} data-id={tramite.id} className={classNames(classes.contenedorTramite)}>
                                 <Typography variant="body1" key={index} className="texto">
                                   {tramite.nombre}
                                 </Typography>
@@ -591,15 +563,8 @@ class EntidadDetalle extends React.Component {
                       {data.links &&
                         data.links.length > 0 &&
                         data.links.map((link, index) => {
-                          let enfocado = this.state["linkDeInteresEnfocado" + link.id] == true;
                           return (
-                            <div
-                              key={index}
-                              data-id={link.id}
-                              onMouseEnter={this.onLinkDeInteresMouseEnter}
-                              onMouseLeave={this.onLinkDeInteresMouseLeave}
-                              className={classNames(classes.contenedorLinkInteres, enfocado && "enfocado")}
-                            >
+                            <div key={index} data-id={link.id} className={classNames(classes.contenedorLinkInteres)}>
                               <div className="textos">
                                 <Typography variant="body1">{link.alias}</Typography>
                                 <Typography variant="body1" target="_blank" href={link.url} component="a" className={classes.linkInteres}>
@@ -637,8 +602,8 @@ class EntidadDetalle extends React.Component {
             ]}
             cargando={this.state.dialogoEditarCargando || false}
             visible={this.state.dialogoEditarVisible || false}
-            mostrarBaner={this.state.dialogoEditarErrorVisible || false}
-            textoBaner={this.state.dialogoEditarError}
+            banerVisible={this.state.dialogoEditarErrorVisible || false}
+            banerMensaje={this.state.dialogoEditarError}
             onClose={this.onDialogoEditarClose}
             textoSi="Guardar"
             textoNo="Cancelar"
@@ -657,8 +622,8 @@ class EntidadDetalle extends React.Component {
             ]}
             cargando={this.state.dialogoTramiteNuevoCargando || false}
             visible={this.state.dialogoTramiteNuevoVisible || false}
-            mostrarBaner={this.state.dialogoTramiteNuevoErrorVisible || false}
-            textoBaner={this.state.dialogoTramiteNuevoError}
+            banerVisible={this.state.dialogoTramiteNuevoErrorVisible || false}
+            banerMensaje={this.state.dialogoTramiteNuevoError}
             onClose={this.onDialogoTramiteNuevoClose}
             textoSi="Guardar"
             textoNo="Cancelar"
@@ -673,8 +638,8 @@ class EntidadDetalle extends React.Component {
             visible={this.state.dialogoTramiteBorrarConfirmacionVisible || false}
             onClose={this.onDialogoTramiteBorrarConfirmacionClose}
             cargando={this.state.dialogoTramiteBorrarConfirmacionCargando || false}
-            mostrarBaner={this.state.dialogoTramiteBorrarConfirmacionErrorVisible || false}
-            textoBaner={this.state.dialogoTramiteBorrarConfirmacionErrorError}
+            banerVisible={this.state.dialogoTramiteBorrarConfirmacionErrorVisible || false}
+            banerMensaje={this.state.dialogoTramiteBorrarConfirmacionErrorError}
             textoSi={"Borrar"}
             textoNo={"Cancelar"}
             onBotonSiClick={this.onDialogoTramiteBorrarConfirmacionBotonSiClick}
@@ -690,8 +655,8 @@ class EntidadDetalle extends React.Component {
             inputs={[{ key: "alias", label: "Alias", value: "" }, { key: "direccion", label: "Dirección", value: "" }]}
             cargando={this.state.dialogoLinkDeInteresNuevoCargando || false}
             visible={this.state.dialogoLinkDeInteresNuevoVisible || false}
-            mostrarBaner={this.state.dialogoLinkDeInteresNuevoErrorVisible || false}
-            textoBaner={this.state.dialogoLinkDeInteresNuevoError}
+            banerVisible={this.state.dialogoLinkDeInteresNuevoErrorVisible || false}
+            banerMensaje={this.state.dialogoLinkDeInteresNuevoError}
             onClose={this.onDialogoLinkDeInteresNuevoClose}
             textoSi="Guardar"
             textoNo="Cancelar"
@@ -706,8 +671,8 @@ class EntidadDetalle extends React.Component {
             visible={this.state.dialogoLinkDeInteresBorrarConfirmacionVisible || false}
             onClose={this.onDialogoLinkDeInteresBorrarConfirmarClose}
             cargando={this.state.dialogoLinkDeInteresBorrarConfirmacionCargando || false}
-            mostrarBaner={this.state.dialogoLinkDeInteresBorrarConfirmacionErrorVisible || false}
-            textoBaner={this.state.dialogoLinkDeInteresBorrarConfirmacionError}
+            banerVisible={this.state.dialogoLinkDeInteresBorrarConfirmacionErrorVisible || false}
+            banerMensaje={this.state.dialogoLinkDeInteresBorrarConfirmacionError}
             textoSi={"Borrar"}
             textoNo={"Cancelar"}
             onBotonSiClick={this.onDialogoLinkDeInteresBorrarBotonSiClick}
@@ -715,32 +680,6 @@ class EntidadDetalle extends React.Component {
             mensaje={"¿Esta seguro que desea borrar el link de interés seleccionado? Esta acción no se puede deshacer."}
           />
         )}
-
-        {/* Dialogo de tramites editar */}
-        {/* {this.state.data &&
-          this.state.data.tramites.map(tramite => {
-            return (
-              <DialogoTramite
-                key={"" + tramite.id}
-                visible={this.state["dialogoTramiteEditarVisible" + tramite.id] || false}
-                data={tramite}
-                onBotonSiClick={this.editarTramite}
-                onClose={this.onDialogoTramiteEditarClose}
-                mostrarBaner={this.state["dialogoTramiteEditarErrorVisible" + tramite.id] || false}
-                textoBaner={this.state["dialogoTramiteEditarError" + tramite.id] || ""}
-                cargando={this.state["dialogoTramiteEditarCargando" + tramite.id] || false}
-              />
-            );
-          })} */}
-
-        {/* Dialogo mensaje */}
-        {/* <DialogoMensaje
-          onClose={this.onDialogoMensajeClose}
-          textoSi={"Aceptar"}
-          botonNoVisible={false}
-          visible={this.state.dialogoMensajeVisible || false}
-          mensaje={this.state.dialogoMensajeContenido}
-        /> */}
       </React.Fragment>
     );
   }

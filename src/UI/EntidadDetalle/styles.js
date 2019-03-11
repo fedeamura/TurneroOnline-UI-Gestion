@@ -86,7 +86,7 @@ const styles = theme => {
         // transform: "scale(0.7)",
         transition: "all 0.3s"
       },
-      "&.enfocado": {
+      "&:hover": {
         backgroundColor: "rgba(0,0,0,0.025)",
         "& .boton": {
           opacity: 1,
@@ -113,7 +113,7 @@ const styles = theme => {
         // transform: "scale(0.7)",
         transition: "all 0.3s"
       },
-      "&.enfocado": {
+      "&:hover": {
         backgroundColor: "rgba(0,0,0,0.025)",
         "& .boton": {
           opacity: 1,

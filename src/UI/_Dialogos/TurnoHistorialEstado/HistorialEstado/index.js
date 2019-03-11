@@ -14,12 +14,31 @@ import IconKeyboardArrowRightOutlined from "@material-ui/icons/KeyboardArrowRigh
 import CordobaFileUtils from "@Componentes/Utils/CordobaFiles";
 import DateUtils from "@Componentes/Utils/Date";
 
-class HistorialEstado extends React.PureComponent {
+import DialogoUsuarioDetalle from "../../../_Dialogos/UsuarioDetalle";
+
+class HistorialEstado extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      dialogoUsuarioDetalleVisible: false,
+      dialogoUsuarioDetalleId: -1
+    };
   }
 
   componentDidMount() {}
+
+  onUsuarioModificacionClick = () => {
+    this.setState({ dialogoUsuarioDetalleVisible: true, dialogoUsuarioDetalleId: this.props.data.usuarioCreadorId });
+  };
+
+  onUsuarioAsociadoClick = () => {
+    this.setState({ dialogoUsuarioDetalleVisible: true, dialogoUsuarioDetalleId: this.props.data.usuarioAsociadoId });
+  };
+
+  onDialogoUsuarioDetalleClose = () => {
+    this.setState({ dialogoUsuarioDetalleVisible: false });
+  };
 
   render() {
     const { classes, data } = this.props;
@@ -34,6 +53,7 @@ class HistorialEstado extends React.PureComponent {
       usuarioAsociadoApellido,
       usuarioAsociadoIdentificadorFotoPersonal,
       usuarioAsociadoSexoMasculino,
+
       usuarioCreadorNombre,
       usuarioCreadorApellido,
       usuarioCreadorIdentificadorFotoPersonal,
@@ -48,8 +68,6 @@ class HistorialEstado extends React.PureComponent {
 
     let fotoUsuarioAsociado = CordobaFileUtils.getUrlFotoMiniatura(usuarioAsociadoIdentificadorFotoPersonal, usuarioAsociadoSexoMasculino);
     let fotoUsuarioCreador = CordobaFileUtils.getUrlFotoMiniatura(usuarioCreadorIdentificadorFotoPersonal, usuarioCreadorSexoMasculino);
-
-    console.log(this.props.data);
 
     return (
       <React.Fragment>
@@ -76,7 +94,7 @@ class HistorialEstado extends React.PureComponent {
                   Asociado a
                 </Typography>
                 <div className={classes.fotoUsuarioAsociado} style={{ backgroundImage: `url(${fotoUsuarioAsociado})` }} />
-                <Typography variant="body1" className={classes.link} noWrap>
+                <Typography variant="body1" className={classes.link} noWrap onClick={this.onUsuarioAsociadoClick}>
                   {usuarioAsociadoNombre + " " + usuarioAsociadoApellido}
                 </Typography>
               </div>
@@ -87,7 +105,7 @@ class HistorialEstado extends React.PureComponent {
                 Modificado por
               </Typography>
               <div className={classes.fotoUsuarioAsociado} style={{ backgroundImage: `url(${fotoUsuarioCreador})` }} />
-              <Typography variant="caption" className={classes.link} noWrap>
+              <Typography variant="caption" className={classes.link} noWrap onClick={this.onUsuarioModificacionClick}>
                 {usuarioCreadorNombre} {usuarioCreadorApellido}
               </Typography>
             </div>
@@ -99,6 +117,13 @@ class HistorialEstado extends React.PureComponent {
             )} */}
           </div>
         </div>
+
+        {/* Detalle usuario */}
+        <DialogoUsuarioDetalle
+          visible={this.state.dialogoUsuarioDetalleVisible}
+          id={this.state.dialogoUsuarioDetalleId || -1}
+          onClose={this.onDialogoUsuarioDetalleClose}
+        />
       </React.Fragment>
     );
   }

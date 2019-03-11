@@ -571,11 +571,6 @@ class TurneroNuevoConfigurar extends React.Component {
 
   //Dialogo Publicar turnero
   onBotonPublicarTurneroClick = () => {
-    // if (this.state.horarioSemanal.length == 0 && this.state.excepciones.length == 0) {
-    //   this.props.mostrarAlertaRoja({ texto: "Ingrese algun horario semanal o excepcion" });
-    //   return;
-    // }
-
     this.setState(
       {
         cargando: true
@@ -832,6 +827,21 @@ class TurneroNuevoConfigurar extends React.Component {
     }
   };
 
+  //Borrador
+  onBotonBorradorClick = () => {
+    this.setState({ cargando: true }, () => {
+      Rules_Turnero.setBorrador(this.state.data.id)
+        .then(() => {
+          this.props.mostrarAlertaVerde({ texto: "Turnero en borrador" });
+          this.buscarDatos();
+        })
+        .catch(error => {
+          this.props.mostrarAlertaRoja({ texto: error });
+          this.setState({ cargando: false });
+        });
+    });
+  };
+
   render() {
     const { classes } = this.props;
     const { cargando, data } = this.state;
@@ -884,7 +894,7 @@ class TurneroNuevoConfigurar extends React.Component {
           modo="error"
           mensaje={errorMensaje || ""}
           className={classes.contenedorError}
-          mostrarBoton={true}
+          botonVisible={true}
           onBotonClick={this.onErrorClose}
         />
       </React.Fragment>
@@ -923,7 +933,7 @@ class TurneroNuevoConfigurar extends React.Component {
             <div style={{ backgroundColor: "rgba(0,0,0,0.025)", padding: "16px" }}>
               <Grid container spacing={16}>
                 <Grid item xs={12}>
-                  <Typography variant="display1">{nombre}</Typography>
+                  <Typography variant="title">{nombre}</Typography>
                 </Grid>
 
                 <Grid item xs={12}>
@@ -934,10 +944,12 @@ class TurneroNuevoConfigurar extends React.Component {
                       </Typography>
                       <Typography variant="body1">{`Duracion de turno: ${duracionTurno}`}</Typography>
                     </div>
-                    <Button color="primary" onClick={this.onBotonEditarClick} style={{ marginLeft: 16 }}>
-                      <IconEditOutlined style={{ marginRight: 8 }} />
-                      Editar duración
-                    </Button>
+                    {data && data.publicado == false && (
+                      <Button color="primary" onClick={this.onBotonEditarClick} style={{ marginLeft: 16 }}>
+                        <IconEditOutlined style={{ marginRight: 8 }} />
+                        Editar duración
+                      </Button>
+                    )}
                   </div>
                 </Grid>
               </Grid>
@@ -949,10 +961,12 @@ class TurneroNuevoConfigurar extends React.Component {
                 <Grid item xs={12}>
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <Typography variant="title">Horario semanal</Typography>
-                    <Button color="primary" style={{ marginLeft: 16 }} onClick={this.onBotonHorarioSemanalNuevoClick}>
-                      <IconAddOutlined />
-                      Nuevo
-                    </Button>
+                    {data && data.publicado == false && (
+                      <Button color="primary" style={{ marginLeft: 16 }} onClick={this.onBotonHorarioSemanalNuevoClick}>
+                        <IconAddOutlined />
+                        Nuevo
+                      </Button>
+                    )}
                   </div>
                   <div className={classes.contenedorHorarioSemanal}>
                     {horarioSemanal &&
@@ -967,14 +981,16 @@ class TurneroNuevoConfigurar extends React.Component {
                               <Typography variant="body1">{`Desde ${horaInicio} hasta ${horaFin}`}</Typography>
                               <Typography variant="body1">{`${horario.cantidadPuestosTrabajo} puestos de trabajo`}</Typography>
                             </div>
-                            <div className="contenedorBotones">
-                              <IconButton className="boton" data-id={horario.id} onClick={this.onBotonHorarioSemanalBorrarClick}>
-                                <IconDeleteOutlined />
-                              </IconButton>
-                              <IconButton className="boton" data-id={horario.id} onClick={this.onBotonHorarioSemanalMenuClick}>
-                                <IconMoreVertOutlined />
-                              </IconButton>
-                            </div>
+                            {data && data.publicado == false && (
+                              <div className="contenedorBotones">
+                                <IconButton className="boton" data-id={horario.id} onClick={this.onBotonHorarioSemanalBorrarClick}>
+                                  <IconDeleteOutlined />
+                                </IconButton>
+                                <IconButton className="boton" data-id={horario.id} onClick={this.onBotonHorarioSemanalMenuClick}>
+                                  <IconMoreVertOutlined />
+                                </IconButton>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -985,10 +1001,13 @@ class TurneroNuevoConfigurar extends React.Component {
                 <Grid item xs={12}>
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <Typography variant="title">Excepciones</Typography>
-                    <Button color="primary" style={{ marginLeft: 16 }} onClick={this.onBotonExcepcionNuevoClick}>
-                      <IconAddOutlined />
-                      Nuevo
-                    </Button>
+
+                    {data && data.publicado == false && (
+                      <Button color="primary" style={{ marginLeft: 16 }} onClick={this.onBotonExcepcionNuevoClick}>
+                        <IconAddOutlined />
+                        Nuevo
+                      </Button>
+                    )}
                   </div>
                   <div className={classes.contenedorExcepciones}>
                     {excepciones &&
@@ -1011,13 +1030,15 @@ class TurneroNuevoConfigurar extends React.Component {
                                         <Typography variant="body1">{`Desde ${horaInicio} hasta ${horaFin}`}</Typography>
                                         <Typography variant="body1">{`${horario.cantidadPuestosTrabajo} puestos de trabajo`}</Typography>{" "}
                                       </div>
-                                      <IconButton
-                                        className="boton"
-                                        data-id={horario.id}
-                                        onClick={this.onBotonExcepcionHorarioBotonBorrarClick}
-                                      >
-                                        <IconDeleteOutlined />
-                                      </IconButton>
+                                      {data && data.publicado == false && (
+                                        <IconButton
+                                          className="boton"
+                                          data-id={horario.id}
+                                          onClick={this.onBotonExcepcionHorarioBotonBorrarClick}
+                                        >
+                                          <IconDeleteOutlined />
+                                        </IconButton>
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -1025,11 +1046,13 @@ class TurneroNuevoConfigurar extends React.Component {
                               {!excepcion.horarios ||
                                 (excepcion.horarios.length == 0 && <Typography variant="body1">{`No trabaja en todo el dia`}</Typography>)}
                             </div>
-                            <div className="contenedorBotones">
-                              <IconButton className="boton" data-id={excepcion.id} onClick={this.onBotonExcepcionBotonBorrarClick}>
-                                <IconDeleteOutlined />
-                              </IconButton>
-                            </div>
+                            {data && data.publicado == false && (
+                              <div className="contenedorBotones">
+                                <IconButton className="boton" data-id={excepcion.id} onClick={this.onBotonExcepcionBotonBorrarClick}>
+                                  <IconDeleteOutlined />
+                                </IconButton>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -1040,29 +1063,47 @@ class TurneroNuevoConfigurar extends React.Component {
 
             <div style={{ padding: 16 }}>
               <Grid container spacing={16}>
-                <Grid item xs={12} sm={6}>
-                  <Button
-                    fullWidth
-                    className="boton"
-                    variant="outlined"
-                    style={{ color: red["600"], borderColor: red["600"] }}
-                    onClick={this.onBotonDescartarTurneroClick}
-                  >
-                    Descartar borrador
-                  </Button>
-                </Grid>
+                {data && data.publicado == false && (
+                  <React.Fragment>
+                    <Grid item xs={12} sm={6}>
+                      <Button
+                        fullWidth
+                        className="boton"
+                        variant="outlined"
+                        style={{ color: red["600"], borderColor: red["600"] }}
+                        onClick={this.onBotonDescartarTurneroClick}
+                      >
+                        Eliminar turnero
+                      </Button>
+                    </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <Button
-                    fullWidth
-                    className="boton"
-                    variant="outlined"
-                    style={{ color: green["600"], borderColor: green["600"] }}
-                    onClick={this.onBotonPublicarTurneroClick}
-                  >
-                    Publicar turnero
-                  </Button>
-                </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Button
+                        fullWidth
+                        className="boton"
+                        variant="outlined"
+                        style={{ color: green["600"], borderColor: green["600"] }}
+                        onClick={this.onBotonPublicarTurneroClick}
+                      >
+                        Publicar turnero
+                      </Button>
+                    </Grid>
+                  </React.Fragment>
+                )}
+
+                {data && data.publicado == true && (
+                  <Grid item xs={12}>
+                    <Button
+                      fullWidth
+                      className="boton"
+                      variant="outlined"
+                      style={{ color: green["600"], borderColor: green["600"] }}
+                      onClick={this.onBotonBorradorClick}
+                    >
+                      Poner en borrador
+                    </Button>
+                  </Grid>
+                )}
               </Grid>
             </div>
           </div>

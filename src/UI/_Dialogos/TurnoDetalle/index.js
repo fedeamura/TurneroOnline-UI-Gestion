@@ -41,6 +41,7 @@ import DialogoSelectorUsuario from "@UI/_Dialogos/SelectorUsuario";
 import MiBaner from "@Componentes/MiBaner";
 import DialogoTurnoHistorialEstado from "@UI/_Dialogos/TurnoHistorialEstado";
 import DateUtils from "@Componentes/Utils/Date";
+import DialogoUsuarioDetalle from "../../_Dialogos/UsuarioDetalle";
 
 //Rules
 import Rules_Turno from "@Rules/Rules_Turno";
@@ -111,10 +112,8 @@ class DialogoTurnoDetalle extends React.Component {
     this.setState({ cargando: true }, () => {
       Rules_Usuario.getRol(this.props.rol.entidadId)
         .then(rol => {
-          console.log("id", id);
           Rules_Turno.getDetalle({ id: id, idEntidad: this.props.rol.entidadId })
             .then(data => {
-              console.log(data);
               this.setState({ data: data });
             })
             .catch(error => {
@@ -345,8 +344,10 @@ class DialogoTurnoDetalle extends React.Component {
     this.setState({ dialogoHistorialEstadoVisible: false });
   };
 
+  // Nota
+
   mostrarDialogoAgregarNota = () => {
-    this.setState({ dialogoAgregarNotaVisible: true, dialogoAgregarNotaErrorVisible:false });
+    this.setState({ dialogoAgregarNotaVisible: true, dialogoAgregarNotaErrorVisible: false });
   };
 
   onDialogoAgregarNotaClose = () => {
@@ -384,6 +385,19 @@ class DialogoTurnoDetalle extends React.Component {
 
   onDialogoAgregarNotaErrorClose = () => {
     this.setState({ dialogoAgregarNotaErrorVisible: false });
+  };
+
+  onNotaUsuarioClick = data => {
+    this.mostrarDialogoUsuarioDetalle(data.usuarioCreador.id);
+  };
+
+  //Dialogo detalle
+  mostrarDialogoUsuarioDetalle = id => {
+    this.setState({ dialogoUsuarioDetalleVisible: true, dialogoUsuarioDetalleId: id });
+  };
+
+  onDialogoUsuarioDetalleClose = () => {
+    this.setState({ dialogoUsuarioDetalleVisible: false });
   };
 
   render() {
@@ -427,7 +441,7 @@ class DialogoTurnoDetalle extends React.Component {
             visible={this.state.mostrarError}
             mensaje={this.state.error}
             onBotonClick={this.onBanerErrorClose}
-            mostrarBoton={true}
+            botonVisible={true}
             className={classes.contenedorError}
           />
           <DialogContent style={{ padding: 0 }}>
@@ -554,7 +568,7 @@ class DialogoTurnoDetalle extends React.Component {
                   <div style={{ marginBottom: 16 }}>
                     <Typography variant="headline">Notas</Typography>
                     {this.state.data.notas.map((nota, index) => {
-                      return <Nota data={nota} key={index} classes={classes} />;
+                      return <Nota data={nota} key={index} classes={classes} onUsuarioClick={this.onNotaUsuarioClick} />;
                     })}
                     {this.state.data.notas.length == 0 && <Typography variant="body1">Todavía no hay ninguna nota registrada</Typography>}
                   </div>
@@ -663,10 +677,10 @@ class DialogoTurnoDetalle extends React.Component {
         {/* Dialogo agregar nota */}
         <DialogoInput
           visible={this.state.dialogoAgregarNotaVisible || false}
-          mostrarBaner={this.state.dialogoAgregarNotaErrorVisible || false}
-          textoBaner={this.state.dialogoAgregarNotaError || ""}
+          banerVisible={this.state.dialogoAgregarNotaErrorVisible || false}
+          banerMensaje={this.state.dialogoAgregarNotaError || ""}
           onBotonBanerClick={this.onDialogoAgregarNotaErrorClose}
-          mostrarBotonBaner={true}
+          banerBotonVisible={true}
           titulo="Agregar nota"
           multiline={true}
           tituloInput="Mensaje de la nota"
@@ -678,12 +692,22 @@ class DialogoTurnoDetalle extends React.Component {
           onBotonSiClick={this.agregarNota}
           cargando={this.state.dialogoAgregarNotaCargando || false}
         />
+
+        {/* Detalle de usuario */}
+        <DialogoUsuarioDetalle
+          visible={this.state.dialogoUsuarioDetalleVisible || false}
+          onClose={this.onDialogoUsuarioDetalleClose}
+          id={this.state.dialogoUsuarioDetalleId || -1}
+        />
       </React.Fragment>
     );
   }
 }
 
 class Nota extends React.PureComponent {
+  onUsuarioClick = () => {
+    this.props.onUsuarioClick && this.props.onUsuarioClick(this.props.data);
+  };
   render() {
     const { data, classes } = this.props;
 
@@ -699,7 +723,11 @@ class Nota extends React.PureComponent {
           primary={data.contenido}
           secondary={
             <Typography variant="caption">
-              Por <a className={classes.linkInteres}>{nombre}</a> el {fecha}
+              Por{" "}
+              <a className={classes.linkInteres} onClick={this.onUsuarioClick}>
+                {nombre}
+              </a>{" "}
+              el {fecha}
             </Typography>
           }
         />

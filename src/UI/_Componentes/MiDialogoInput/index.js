@@ -23,8 +23,8 @@ class DialogoInput extends React.Component {
 
     this.state = {
       input: "",
-      mostrarBaner: false,
-      textoBaner: ""
+      banerVisible: false,
+      banerMensaje: ""
     };
   }
 
@@ -74,9 +74,9 @@ class DialogoInput extends React.Component {
       <React.Fragment>
         <Dialog open={this.props.visible} onClose={this.onClose} aria-labelledby="responsive-dialog-title">
           <MiBaner
-            visible={this.props.mostrarBaner}
-            mensaje={this.props.textoBaner}
-            mostrarBoton={this.props.mostrarBotonBaner}
+            visible={this.props.banerVisible || false}
+            mensaje={this.props.banerMensaje || ""}
+            botonVisible={this.props.banerBotonVisible||false}
             modo="error"
             onBotonClick={this.props.onBotonBanerClick}
           />

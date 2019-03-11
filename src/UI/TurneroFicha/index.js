@@ -141,7 +141,6 @@ class TurneroFicha extends React.Component {
   };
 
   onDialogoUbicacionNuevoClose = data => {
-    console.log(data);
 
     if (data) {
       this.buscarDatos();
@@ -399,7 +398,7 @@ class TurneroFicha extends React.Component {
               modo="error"
               mensaje={this.state.errorMensaje}
               className={classes.contenedorError}
-              mostrarBoton={true}
+              botonVisible={true}
               onBotonClick={this.onErrorClose}
             />
 
@@ -566,7 +565,6 @@ class TurneroFicha extends React.Component {
                         {!tieneUsuarioAsociados && <Typography variant="body1">No registró ninguna persona asociada</Typography>}
                         {tieneUsuarioAsociados &&
                           data.usuariosAsociados.map(usuario => {
-                            console.log(usuario);
                             return (
                               <div key={usuario.id} className={classes.usuario}>
                                 <div className={"contenedorInfo"}>

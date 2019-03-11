@@ -3,6 +3,16 @@ import yellow from "@material-ui/core/colors/yellow";
 
 const styles = theme => {
   return {
+    collapseView: {
+      maxWidth: 0,
+      opacity: 0,
+      overflow: "hidden",
+      transition: "all 0.3s",
+      "&.visible": {
+        opacity: 1,
+        maxWidth: 300
+      }
+    },
     contenedorInfoTurnero: {
       display: "flex",
       alignItems: "flex-start",
@@ -73,7 +83,10 @@ const styles = theme => {
     contenedorTitulo: {
       display: "flex",
       flexDirection: "column",
-      padding: theme.spacing.unit * 2,
+      alignItems: "center",
+      // padding: theme.spacing.unit * 2,
+      paddingLeft: theme.spacing.unit * 2,
+      paddingRight: theme.spacing.unit,
       [theme.breakpoints.up("lg")]: {
         flexDirection: "row"
       },
@@ -90,8 +103,19 @@ const styles = theme => {
         display: "flex"
       }
     },
+    inputBusquedaTabla: {
+      "& > div": {
+        paddingLeft: 8,
+        paddingRight: 0
+      },
+      "& input": {
+        paddingTop: 8,
+        paddingBottom: 8
+      }
+    },
     contenedorTituloFiltros: {
-      padding: theme.spacing.unit * 2,
+      paddingLeft: theme.spacing.unit * 2,
+      paddingRight: theme.spacing.unit,
       display: "flex",
       alignItems: "center",
       flexDirection: "row",
@@ -171,6 +195,27 @@ const styles = theme => {
       alignItems: "center",
       "& > div": {
         marginRight: "8px"
+      }
+    },
+    colUsuario: {
+      display: "flex",
+      alignItems: "center",
+      "& > div": {
+        marginRight: "8px"
+      },
+      "& .imagen": {
+        width: 30,
+        height: 30,
+        backgroundSize: "cover",
+        borderRadius: 30
+      },
+      "& .nombre": {
+        cursor: "pointer",
+        textDecoration: "underline",
+        // color: theme.palette.primary.main,
+        "&:hover": {
+          fontWeight: "bold"
+        }
       }
     },
     indicadorEstado: {

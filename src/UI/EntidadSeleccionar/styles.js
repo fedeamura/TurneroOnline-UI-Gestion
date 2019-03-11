@@ -13,8 +13,10 @@ const styles = theme => {
       marginRight: "0px",
       borderRadius: "16px",
       backgroundSize: "cover",
-      width: "156px",
-      height: "156px"
+      minWidth: 156,
+      minHeight: 156,
+      maxHeight: 156, 
+      maxWidth: 156
     },
     cardContent: {
       display: "flex"

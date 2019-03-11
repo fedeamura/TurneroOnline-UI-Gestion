@@ -24,7 +24,8 @@ import IconDeleteOutlineOutlined from "@material-ui/icons/DeleteOutlineOutlined"
 import IconEditOutlined from "@material-ui/icons/EditOutlined";
 import IconAddOutlined from "@material-ui/icons/AddOutlined";
 import IconCalendarTodayOutlined from "@material-ui/icons/CalendarTodayOutlined";
-import IconTodayOutlined from "@material-ui/icons/TodayOutlined";
+import IconVisibilityOutlined from "@material-ui/icons/VisibilityOutlined";
+import IconVisibilityOffOutlined from "@material-ui/icons/VisibilityOffOutlined";
 
 //Mis componentes
 import DialogoForm from "@Componentes/MiDialogoForm";
@@ -283,7 +284,7 @@ class TramiteDetalle extends React.Component {
         .catch(error => {
           this.setState({
             dialogoTurneroBorrarErrorVisible: true,
-            dialogoTurneroBorrarError: error,
+            dialogoTurneroBorrarErrorMensaje: error,
             dialogoTurneroBorrarCargando: false
           });
         });
@@ -306,27 +307,10 @@ class TramiteDetalle extends React.Component {
     this.setState({ dialogoMensajeVisible: false });
   };
 
-  //Editar borrador
-  onBotonTurneroBorradorEditarClick = e => {
+  //Ver programacion
+  onBotonTurneroVerProgramacionClick = e => {
     let id = e.currentTarget.attributes["data-id"].value;
-    this.props.redireccionar("/TurneroBorrador/" + id);
-  };
-
-  onBotonTurneroBorradorClick = e => {
-    let id = e.currentTarget.attributes["data-id"].value;
-    this.setState({ cargando: true }, () => {
-      Rules_Turnero.setBorrador(id)
-        .then(() => {
-          this.props.mostrarAlertaVerde({ texto: "Turnero en borrador" });
-          this.props.redireccionar("/TurneroBorrador/" + id);
-        })
-        .catch(error => {
-          this.props.mostrarAlertaRoja({ texto: error });
-        })
-        .finally(() => {
-          this.setState({ cargando: false });
-        });
-    });
+    this.props.redireccionar("/TurneroProgramacion/" + id);
   };
 
   onBotonEntidadClick = () => {
@@ -334,9 +318,32 @@ class TramiteDetalle extends React.Component {
   };
 
   //Editar ficha
-  onBotonTurneroFichaClick = (e) => {
-    var id = e.currentTarget.attributes['data-id'].value;
+  onBotonTurneroFichaClick = e => {
+    var id = e.currentTarget.attributes["data-id"].value;
     this.props.redireccionar("/TurneroFicha/" + id);
+  };
+
+  //Visible
+  onBotonVisibleClick = async e => {
+    var id = e.currentTarget.attributes["data-id"].value;
+    var turnero = _.find(this.state.data.turneros, x => x.id == id);
+    console.log(turnero);
+    this.setState({
+      cargando: true
+    });
+
+    try {
+      await Rules_Turnero.setVisible({
+        idTurnero: id,
+        visible: !turnero.visible
+      });
+
+      this.props.mostrarAlertaVerde({ texto: "Turnero modificado correctamente" });
+      this.buscarDatos();
+    } catch (ex) {
+      this.props.mostrarAlertaRoja({ texto: typeof ex == "object" ? ex.message : ex });
+    }
+    this.setState({ cargando: false });
   };
 
   render() {
@@ -368,7 +375,7 @@ class TramiteDetalle extends React.Component {
               modo="error"
               mensaje={this.state.error}
               className={classes.contenedorError}
-              mostrarBoton={true}
+              botonVisible={true}
               onBotonClick={this.onErrorClose}
             />
 
@@ -426,6 +433,7 @@ class TramiteDetalle extends React.Component {
                                     </Typography>
                                   </div>
                                   <div className={"contenedorBotones"}>
+                                    {/* boton ficha */}
                                     <Tooltip disableFocusListener={true} title="Editar ficha">
                                       <IconButton
                                         className="boton"
@@ -436,16 +444,35 @@ class TramiteDetalle extends React.Component {
                                         <IconEditOutlined />
                                       </IconButton>
                                     </Tooltip>
-                                    <Tooltip disableFocusListener={true} title="Editar programación">
+
+                                    {/* Boton ver programacion */}
+                                    <Tooltip disableFocusListener={true} title="Ver programación">
                                       <IconButton
                                         data-id={turnero.id}
-                                        onClick={this.onBotonTurneroBorradorEditarClick}
+                                        onClick={this.onBotonTurneroVerProgramacionClick}
                                         className="boton"
                                         style={{ marginLeft: 8 }}
                                       >
-                                        <IconTodayOutlined />
+                                        <IconCalendarTodayOutlined />
                                       </IconButton>
                                     </Tooltip>
+
+                                    {/* Boton visible/invisible */}
+                                    <Tooltip
+                                      disableFocusListener={true}
+                                      title={turnero.visible == true ? "Poner invisible" : "Poner visible"}
+                                    >
+                                      <IconButton
+                                        data-id={turnero.id}
+                                        onClick={this.onBotonVisibleClick}
+                                        className="boton"
+                                        style={{ marginLeft: 8 }}
+                                      >
+                                        {turnero.visible ? <IconVisibilityOffOutlined /> : <IconVisibilityOutlined />}
+                                      </IconButton>
+                                    </Tooltip>
+
+                                    {/* Boton borrar */}
                                     <Tooltip disableFocusListener={true} title="Descartar borrador">
                                       <IconButton className="boton" onClick={this.onBotonTurneroBorrarClick} data-id={turnero.id}>
                                         <IconDeleteOutlineOutlined />
@@ -485,16 +512,32 @@ class TramiteDetalle extends React.Component {
                                         <IconEditOutlined />
                                       </IconButton>
                                     </Tooltip>
-                                    <Tooltip disableFocusListener={true} title="Poner en borrador">
+                                    <Tooltip disableFocusListener={true} title="Ver programación">
                                       <IconButton
                                         data-id={turnero.id}
                                         className="boton"
                                         style={{ marginLeft: 8 }}
-                                        onClick={this.onBotonTurneroBorradorClick}
+                                        onClick={this.onBotonTurneroVerProgramacionClick}
                                       >
                                         <IconCalendarTodayOutlined />
                                       </IconButton>
                                     </Tooltip>
+
+                                    {/* Boton visible/invisible */}
+                                    <Tooltip
+                                      disableFocusListener={true}
+                                      title={turnero.visible == true ? "Poner invisible" : "Poner visible"}
+                                    >
+                                      <IconButton
+                                        data-id={turnero.id}
+                                        onClick={this.onBotonVisibleClick}
+                                        className="boton"
+                                        style={{ marginLeft: 8 }}
+                                      >
+                                        {turnero.visible ? <IconVisibilityOffOutlined /> : <IconVisibilityOutlined />}
+                                      </IconButton>
+                                    </Tooltip>
+
                                     <Tooltip disableFocusListener={true} title="Borrar turnero">
                                       <IconButton className="boton" data-id={turnero.id} onClick={this.onBotonTurneroBorrarClick}>
                                         <IconDeleteOutlineOutlined />
@@ -545,8 +588,8 @@ class TramiteDetalle extends React.Component {
         ]}
         cargando={this.state.dialogoEditarCargando || false}
         visible={this.state.dialogoEditarVisible || false}
-        mostrarBaner={this.state.dialogoEditarErrorVisible || false}
-        textoBaner={this.state.dialogoEditarError}
+        banerVisible={this.state.dialogoEditarErrorVisible || false}
+        banerMensaje={this.state.dialogoEditarError}
         onClose={this.onDialogoEditarClose}
         textoSi="Guardar"
         textoNo="Cancelar"
@@ -575,7 +618,13 @@ class TramiteDetalle extends React.Component {
         visible={this.state.dialogoTurneroBorrarVisible || false}
         cargando={this.state.dialogoTurneroBorrarCargando || false}
         mensaje={this.state.dialogoTurneroBorrarMensaje || ""}
+        banerVisible={this.state.dialogoTurneroBorrarErrorVisible || false}
+        banerMensaje={this.state.dialogoTurneroBorrarErrorMensaje || ""}
         onClose={this.onDialogoTurneroBorrarClose}
+        onBanerBotonClick={() => {
+          this.setState({ dialogoTurneroBorrarErrorVisible: false });
+        }}
+        banerBotonVisible={true}
         textoSi="Borrar turnero"
         autoCerrarBotonSi={false}
         onBotonSiClick={this.onDialogoTurneroBorrarBotonSiClick}

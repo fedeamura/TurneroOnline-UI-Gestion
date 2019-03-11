@@ -25,7 +25,7 @@ const MODO_EXITO = "exito";
 
 class MiBaner extends React.PureComponent {
   render() {
-    let { classes, modo, mensaje, mostrarBoton, botonIcono } = this.props;
+    let { classes, modo, mensaje, botonVisible, botonIcono } = this.props;
 
     if (modo == undefined) {
       modo = MODO_INFO;
@@ -112,8 +112,8 @@ class MiBaner extends React.PureComponent {
              }}>
             {mensaje}
           </Typography>
-          {mostrarBoton === true && <div style={{ marginLeft: 16 }} />}
-          {mostrarBoton === true && <IconButton onClick={this.props.onBotonClick}>{botonIcono}</IconButton>}
+          {botonVisible === true && <div style={{ marginLeft: 16 }} />}
+          {botonVisible === true && <IconButton onClick={this.props.onBotonClick}>{botonIcono}</IconButton>}
         </div>
       </div>
     );

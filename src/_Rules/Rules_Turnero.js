@@ -134,32 +134,7 @@ const metodos = {
         });
     });
   },
-  getTurnos: comando => {
-    const url = window.Config.WS_TURNERO + "/v1/TurneroPorTramite/Turnos";
-    return new Promise((resolve, reject) => {
-      fetch(url, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "--Token": localStorage.getItem("token")
-        },
-        body: JSON.stringify(comando)
-      })
-        .then(data => data.json())
-        .then(data => {
-          if (data.ok != true) {
-            reject(data.error);
-            return;
-          }
-
-          resolve(data.return);
-        })
-        .catch(error => {
-          reject("Error procesando la solicitud");
-        });
-    });
-  },
+ 
   getHorarioSemanal: idTurnero => {
     const url = window.Config.WS_TURNERO + "/v1/TurneroPorTramite/HorarioSemanal?combinar=false";
     return new Promise((resolve, reject) => {
@@ -798,6 +773,62 @@ const metodos = {
           "--Token": localStorage.getItem("token"),
           "--IdTurnero": comando.idTurnero
         }
+      })
+        .then(data => data.json())
+        .then(data => {
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  exportar: comando => {
+    const url = `${window.Config.WS_TURNERO}/v1/TurneroPorTramite/Exportar`;
+
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token"),
+          "--IdTurnero": comando.idTurnero
+        },
+        body: JSON.stringify(comando)
+      })
+        .then(data => data.json())
+        .then(data => {
+          if (data.ok != true) {
+            reject(data.error);
+            return;
+          }
+
+          resolve(data.return);
+        })
+        .catch(error => {
+          reject("Error procesando la solicitud");
+        });
+    });
+  },
+  setVisible: comando => {
+    const url = `${window.Config.WS_TURNERO}/v1/TurneroPorTramite/Visible?visible=${comando.visible}`;
+
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "--Token": localStorage.getItem("token"),
+          "--IdTurnero": comando.idTurnero
+        },
+        body: JSON.stringify(comando)
       })
         .then(data => data.json())
         .then(data => {
